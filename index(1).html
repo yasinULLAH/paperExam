@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang-key="appTitle">Paper Making Software</title>
+    <style>
+        :root {
+            --primary-bg: #ffffff;
+            --secondary-bg: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --accent-color: #007bff;
+            --hover-bg: #e9ecef;
+            --paper-bg: #ffffff;
+            --paper-shadow: 0 0 10px rgba(0,0,0,0.1);
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-size: 16px;
+            --line-height: 1.6;
+            --page-width-a4: 210mm;
+            --page-height-a4: 297mm;
+            --margin-normal: 20mm;
+            --padding-normal: 15mm;
+        }
+
+        [data-theme="dark"] {
+            --primary-bg: #212529;
+            --secondary-bg: #343a40;
+            --text-color: #f8f9fa;
+            --border-color: #495057;
+            --accent-color: #0d6efd;
+            --hover-bg: #495057;
+            --paper-bg: #2b2f33;
+            --paper-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+
+        [dir="rtl"] {
+            --font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Times New Roman', serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: var(--font-family);
+            font-size: var(--font-size);
+            line-height: var(--line-height);
+            background-color: var(--secondary-bg);
+            color: var(--text-color);
+            overflow: hidden; /* Prevent body scroll */
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toolbar, .statusbar {
+            background-color: var(--primary-bg);
+            padding: 8px 15px;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .statusbar {
+            border-top: 1px solid var(--border-color);
+            border-bottom: none;
+            font-size: 0.9em;
+            justify-content: space-between;
+        }
+
+        .toolbar button, .toolbar select, .toolbar input[type="color"] {
+            padding: 5px 10px;
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-color);
+            font-size: 0.9em;
+            min-width: 30px;
+            text-align: center;
+        }
+        .toolbar input[type="color"] {
+            padding: 2px;
+            height: 28px;
+            vertical-align: middle;
+        }
+
+        .toolbar button:hover, .toolbar select:hover {
+            background-color: var(--hover-bg);
+        }
+        .toolbar button.active {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+        .toolbar .separator {
+            width: 1px;
+            height: 20px;
+            background-color: var(--border-color);
+            margin: 0 5px;
+        }
+        .toolbar select {
+            min-width: 100px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden; /* Important */
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--primary-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 15px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        [dir="rtl"] .sidebar {
+             border-right: none;
+             border-left: 1px solid var(--border-color);
+        }
+
+
+        .sidebar h3 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        #drafts-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        #drafts-list li {
+            padding: 8px 5px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #drafts-list li:hover {
+            background-color: var(--hover-bg);
+        }
+         #drafts-list li.selected {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .draft-actions button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 0.9em;
+            padding: 2px 4px;
+        }
+         #drafts-list li.selected .draft-actions button {
+             color: white;
+         }
+        .draft-actions button:hover {
+             opacity: 0.7;
+        }
+
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+        .sidebar-section label, .sidebar-section input, .sidebar-section button {
+            display: block;
+            width: 100%;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+         .sidebar-section input[type="text"], .sidebar-section input[type="password"], .sidebar-section input[type="search"] {
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--secondary-bg);
+            color: var(--text-color);
+         }
+        .sidebar-section button {
+            padding: 8px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+         .sidebar-section button:hover {
+             opacity: 0.9;
+         }
+         .sidebar-section input[type="file"] {
+             display: none;
+         }
+         .sidebar-section .file-label {
+             padding: 8px;
+             background-color: var(--secondary-bg);
+             color: var(--text-color);
+             border: 1px solid var(--border-color);
+             border-radius: 4px;
+             cursor: pointer;
+             text-align: center;
+             display: block;
+         }
+         .sidebar-section .file-label:hover {
+             background-color: var(--hover-bg);
+         }
+
+
+        .editor-container {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto; /* Allow scrolling for content taller than container */
+            background-color: var(--secondary-bg);
+            display: flex; /* Center the paper */
+            justify-content: center; /* Center horizontally */
+            align-items: flex-start; /* Align paper to top */
+        }
+
+        .paper {
+            background-color: var(--paper-bg);
+            color: var(--text-color); /* Ensure text color contrasts with paper */
+            box-shadow: var(--paper-shadow);
+            width: var(--page-width-a4);
+            min-height: var(--page-height-a4); /* Use min-height for content flow */
+            margin: 20px 0; /* Add vertical margin */
+            padding: var(--padding-normal);
+            padding-top: calc(var(--padding-normal) + 20mm); /* Space for header */
+            padding-bottom: calc(var(--padding-normal) + 20mm); /* Space for footer */
+            position: relative; /* Needed for header/footer positioning */
+            font-family: var(--font-family);
+            font-size: var(--font-size);
+            line-height: var(--line-height);
+            overflow: hidden; /* Prevent content spilling visually */
+        }
+
+        #editor {
+            outline: none;
+            width: 100%;
+            min-height: calc(var(--page-height-a4) - var(--padding-normal) * 2 - 40mm); /* Adjust based on padding and header/footer */
+            line-height: inherit; /* Inherit from .paper */
+            font-size: inherit;
+            font-family: inherit;
+            color: inherit;
+        }
+
+        #editor[dir="rtl"] {
+            text-align: right;
+        }
+        #editor[dir="ltr"] {
+            text-align: left;
+        }
+
+        #editor img {
+            max-width: 100%;
+            height: auto;
+            cursor: move; /* Indication for potential drag/positioning */
+             display: block; /* Prevent extra space below */
+             margin-bottom: 1em; /* Add some space after images */
+        }
+
+        .page-header, .page-footer {
+            position: absolute;
+            left: var(--padding-normal);
+            right: var(--padding-normal);
+            height: 20mm; /* Fixed height */
+            font-size: 0.8em;
+            color: #6c757d; /* Lighter text for header/footer */
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5px; /* Small internal padding */
+        }
+        .page-header {
+            top: var(--padding-normal);
+        }
+        .page-footer {
+            bottom: var(--padding-normal);
+            border-bottom: none;
+            border-top: 1px solid var(--border-color);
+        }
+        [data-theme="dark"] .page-header, [data-theme="dark"] .page-footer {
+            color: #adb5bd;
+            border-color: var(--border-color);
+        }
+
+        /* Basic Formatting Styles */
+        #editor h1, #editor h2, #editor h3, #editor h4, #editor h5, #editor h6 { margin-top: 1em; margin-bottom: 0.5em; font-weight: bold; }
+        #editor h1 { font-size: 2em; }
+        #editor h2 { font-size: 1.75em; }
+        #editor h3 { font-size: 1.5em; }
+        #editor h4 { font-size: 1.25em; }
+        #editor h5 { font-size: 1.1em; }
+        #editor h6 { font-size: 1em; }
+        #editor ul, #editor ol { margin-left: 30px; margin-bottom: 1em; }
+        [dir="rtl"] #editor ul, [dir="rtl"] #editor ol { margin-left: 0; margin-right: 30px; }
+        #editor blockquote {
+            border-left: 4px solid var(--border-color);
+            padding-left: 15px;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 1em;
+            font-style: italic;
+            color: #6c757d;
+        }
+        [dir="rtl"] #editor blockquote {
+            border-left: none;
+            border-right: 4px solid var(--border-color);
+            padding-left: 0;
+            padding-right: 15px;
+        }
+        [data-theme="dark"] #editor blockquote {
+             color: #adb5bd;
+        }
+
+
+        /* Print Styles */
+        @media print {
+            body, html {
+                background-color: #fff; /* Always white for printing */
+                color: #000; /* Always black text */
+                height: auto;
+                overflow: visible;
+                font-size: 12pt; /* Common print size */
+                 -webkit-print-color-adjust: exact !important; /* Force background colors/images printing in Chrome/Safari */
+                 print-color-adjust: exact !important; /* Standard */
+            }
+            .toolbar, .sidebar, .statusbar, .editor-container > *:not(.paper) {
+                display: none; /* Hide UI elements */
+            }
+            .main-content {
+                display: block; /* Reset flex */
+            }
+            .editor-container {
+                padding: 0;
+                overflow: visible;
+                background-color: transparent;
+                display: block; /* Reset flex */
+            }
+            .paper {
+                width: 100%; /* Use full printable area width */
+                height: auto;
+                min-height: 0;
+                box-shadow: none;
+                margin: 0;
+                padding: var(--margin-normal); /* Use margins as padding */
+                padding-top: calc(var(--margin-normal) + 20mm); /* Header space */
+                padding-bottom: calc(var(--margin-normal) + 20mm); /* Footer space */
+                border: none; /* No visual border needed for print */
+                page-break-inside: avoid; /* Try to avoid breaking paper across pages */
+                overflow: visible;
+                position: relative; /* Ensure header/footer are relative to this */
+            }
+             .page-header, .page-footer {
+                 position: absolute; /* Position relative to the .paper */
+                 left: var(--margin-normal);
+                 right: var(--margin-normal);
+                 color: #333; /* Darker for print */
+                 border-color: #ccc;
+             }
+             .page-header { top: var(--margin-normal); }
+             .page-footer { bottom: var(--margin-normal); }
+
+            #editor {
+                min-height: 0;
+                color: #000; /* Ensure editor text is black */
+                font-family: 'Times New Roman', serif; /* Common print font */
+            }
+            #editor img {
+                max-width: 100% !important; /* Ensure images don't overflow */
+                page-break-inside: avoid;
+            }
+             /* Basic pagination attempt - may need more complex JS for perfect pagination */
+             h1, h2, h3, h4, h5, h6 { page-break-after: avoid; page-break-inside: avoid; }
+             p, li, blockquote { page-break-inside: avoid; }
+
+             /* Handle potential Urdu rendering issues - simplistic approach */
+             [dir="rtl"] {
+                 font-family: 'Times New Roman', serif; /* Fallback font if Urdu fonts fail */
+             }
+             /* If specific elements need image rendering (complex JS needed, not implemented here) */
+             /* .render-urdu-as-image { ... } */
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: var(--primary-bg);
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            width: 80%;
+            max-width: 500px;
+            color: var(--text-color);
+        }
+        .modal-header {
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+        .close-button {
+            color: var(--text-color);
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .close-button:hover {
+            opacity: 0.7;
+        }
+        .modal-body label, .modal-body input, .modal-body textarea {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+         .modal-body input[type="text"], .modal-body input[type="date"], .modal-body textarea {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--secondary-bg);
+            color: var(--text-color);
+            font-size: 1em;
+         }
+         .modal-body textarea {
+             min-height: 80px;
+             resize: vertical;
+         }
+        .modal-footer {
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 15px;
+            text-align: right;
+        }
+        .modal-footer button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .modal-footer .save-button {
+            background-color: var(--accent-color);
+            color: white;
+        }
+         .modal-footer .cancel-button {
+            background-color: var(--secondary-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+         }
+
+         /* Drag Over Styling */
+        .drag-over {
+            border: 3px dashed var(--accent-color) !important;
+            background-color: rgba(0, 123, 255, 0.1) !important;
+        }
+
+    </style>
+</head>
+<body data-theme="light">
+
+    <div class="toolbar">
+        <button id="new-doc" data-lang-key="newDocTooltip" title="New Document">📄</button>
+        <button id="save-doc" data-lang-key="saveDocTooltip" title="Save Document">💾</button>
+        <button id="print-doc" data-lang-key="printPdfTooltip" title="Print / Save as PDF">🖨️</button>
+        <div class="separator"></div>
+        <button data-command="bold" title="Bold"><b>B</b></button>
+        <button data-command="italic" title="Italic"><i>I</i></button>
+        <button data-command="underline" title="Underline"><u>U</u></button>
+        <div class="separator"></div>
+        <select data-command="formatBlock" title="Heading">
+            <option value="P" data-lang-key="paragraph">Paragraph</option>
+            <option value="H1">H1</option>
+            <option value="H2">H2</option>
+            <option value="H3">H3</option>
+            <option value="H4">H4</option>
+            <option value="H5">H5</option>
+            <option value="H6">H6</option>
+        </select>
+        <button data-command="insertUnorderedList" title="Bulleted List">UL</button>
+        <button data-command="insertOrderedList" title="Numbered List">OL</button>
+        <div class="separator"></div>
+        <button data-command="justifyLeft" title="Align Left">Left</button>
+        <button data-command="justifyCenter" title="Align Center">Center</button>
+        <button data-command="justifyRight" title="Align Right">Right</button>
+        <button data-command="justifyFull" title="Justify">Justify</button>
+        <div class="separator"></div>
+        <label for="font-color" style="font-size:0.8em; margin-left: 5px;" data-lang-key="colorLabel">Color:</label>
+        <input type="color" id="font-color" data-command="foreColor" title="Font Color" value="#000000">
+        <label for="image-upload" style="font-size:0.8em; margin-left: 5px;" data-lang-key="imageLabel">Image:</label>
+        <button id="insert-image-btn" title="Insert Image">🖼️</button>
+        <input type="file" id="image-upload" accept="image/*" style="display: none;">
+         <div class="separator"></div>
+         <button id="toggle-dark-mode" title="Toggle Dark Mode">🌙</button>
+         <button id="toggle-language" title="Toggle Language">Ur</button>
+    </div>
+
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                 <h3 data-lang-key="draftsTitle">Drafts</h3>
+                 <input type="search" id="search-drafts" placeholder="Search drafts..." data-lang-key="searchPlaceholder">
+                 <ul id="drafts-list">
+                     </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 data-lang-key="docInfoTitle">Document Info</h3>
+                <label for="doc-title" data-lang-key="titleLabel">Title:</label>
+                <input type="text" id="doc-title" placeholder="Document Title">
+                <label for="doc-author" data-lang-key="authorLabel">Author:</label>
+                <input type="text" id="doc-author" placeholder="Author Name">
+                <label for="doc-date" data-lang-key="dateLabel">Date:</label>
+                <input type="date" id="doc-date">
+            </div>
+
+             <div class="sidebar-section">
+                 <h3 data-lang-key="settingsTitle">Settings</h3>
+                 <label for="font-family-select" data-lang-key="fontFamilyLabel">Font Family:</label>
+                 <select id="font-family-select">
+                     <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Sans Serif (Default)</option>
+                     <option value="'Times New Roman', Times, serif">Serif</option>
+                     <option value="'Courier New', Courier, monospace">Monospace</option>
+                     <option value="'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif">Urdu Nastaliq</option>
+                     <option value="Arial, sans-serif">Arial</option>
+                     <option value="Georgia, serif">Georgia</option>
+                 </select>
+                 <label for="font-size-input" data-lang-key="fontSizeLabel">Font Size (px):</label>
+                 <input type="number" id="font-size-input" value="16" min="8" max="72">
+                 <label for="line-height-input" data-lang-key="lineHeightLabel">Line Spacing:</label>
+                 <input type="number" id="line-height-input" value="1.6" min="1" max="3" step="0.1">
+             </div>
+
+             <div class="sidebar-section">
+                 <h3 data-lang-key="headerFooterTitle">Header/Footer</h3>
+                 <label for="header-left" data-lang-key="headerLeftLabel">Header Left:</label>
+                 <input type="text" id="header-left" placeholder="e.g., School Name">
+                 <label for="header-right" data-lang-key="headerRightLabel">Header Right:</label>
+                 <input type="text" id="header-right" placeholder="e.g., Class">
+                 <label for="footer-left" data-lang-key="footerLeftLabel">Footer Left:</label>
+                 <input type="text" id="footer-left" placeholder="e.g., Logo Placeholder">
+                 <label for="footer-right" data-lang-key="footerRightLabel">Footer Right:</label>
+                 <input type="text" id="footer-right" placeholder="e.g., Page #">
+             </div>
+
+             <div class="sidebar-section">
+                 <h3 data-lang-key="backupRestoreTitle">Backup/Restore</h3>
+                 <button id="backup-data" data-lang-key="backupButton">Backup Data</button>
+                 <label for="restore-file" class="file-label" data-lang-key="restoreLabel">Restore Data</label>
+                 <input type="file" id="restore-file" accept=".json">
+             </div>
+
+             </div>
+
+        <div class="editor-container" id="editor-dropzone">
+            <div class="paper" id="paper-sheet">
+                 <div class="page-header">
+                     <span id="header-left-content"></span>
+                     <span id="header-right-content"></span>
+                 </div>
+                <div id="editor" contenteditable="true" spellcheck="true">
+                    </div>
+                 <div class="page-footer">
+                     <span id="footer-left-content"></span>
+                     <span id="footer-right-content"></span>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="statusbar">
+        <span id="word-count" data-lang-key="wordCountText">Words: 0</span>
+        <span id="char-count" data-lang-key="charCountText">Characters: 0</span>
+        <span id="save-status" data-lang-key="statusReady">Ready</span>
+    </div>
+
+    <div id="meta-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 data-lang-key="docDetailsTitle">Document Details</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label for="modal-doc-title" data-lang-key="titleLabel">Title:</label>
+                <input type="text" id="modal-doc-title" required>
+                <label for="modal-doc-author" data-lang-key="authorLabel">Author:</label>
+                <input type="text" id="modal-doc-author">
+                <label for="modal-doc-date" data-lang-key="dateLabel">Date:</label>
+                <input type="date" id="modal-doc-date">
+                 </div>
+            <div class="modal-footer">
+                <button class="cancel-button" data-lang-key="cancelButton">Cancel</button>
+                <button class="save-button" id="save-meta-button" data-lang-key="saveButton">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="password-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 data-lang-key="passwordPromptTitle">Password Required</h2>
+                 <button class="close-button">&times;</button> </div>
+            <div class="modal-body">
+                <label for="prompt-password" data-lang-key="enterPasswordLabel">Enter Password:</label>
+                <input type="password" id="prompt-password" required>
+            </div>
+            <div class="modal-footer">
+                 <button class="cancel-button" data-lang-key="cancelButton">Cancel</button>
+                <button class="save-button" id="submit-password-button" data-lang-key="submitButton">Submit</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const editor = document.getElementById('editor');
+        const paperSheet = document.getElementById('paper-sheet');
+        const draftsList = document.getElementById('drafts-list');
+        const wordCountEl = document.getElementById('word-count');
+        const charCountEl = document.getElementById('char-count');
+        const saveStatusEl = document.getElementById('save-status');
+        const toolbar = document.querySelector('.toolbar');
+        const docTitleInput = document.getElementById('doc-title');
+        const docAuthorInput = document.getElementById('doc-author');
+        const docDateInput = document.getElementById('doc-date');
+        const fontFamilySelect = document.getElementById('font-family-select');
+        const fontSizeInput = document.getElementById('font-size-input');
+        const lineHeightInput = document.getElementById('line-height-input');
+        const headerLeftInput = document.getElementById('header-left');
+        const headerRightInput = document.getElementById('header-right');
+        const footerLeftInput = document.getElementById('footer-left');
+        const footerRightInput = document.getElementById('footer-right');
+        const headerLeftContent = document.getElementById('header-left-content');
+        const headerRightContent = document.getElementById('header-right-content');
+        const footerLeftContent = document.getElementById('footer-left-content');
+        const footerRightContent = document.getElementById('footer-right-content');
+        const toggleDarkModeBtn = document.getElementById('toggle-dark-mode');
+        const toggleLanguageBtn = document.getElementById('toggle-language');
+        const searchDraftsInput = document.getElementById('search-drafts');
+        const newDocBtn = document.getElementById('new-doc');
+        const saveDocBtn = document.getElementById('save-doc');
+        const printDocBtn = document.getElementById('print-doc');
+        const insertImageBtn = document.getElementById('insert-image-btn');
+        const imageUploadInput = document.getElementById('image-upload');
+        const editorDropzone = document.getElementById('editor-dropzone');
+        const backupBtn = document.getElementById('backup-data');
+        const restoreInput = document.getElementById('restore-file');
+        const restoreLabel = document.querySelector('label[for="restore-file"]');
+
+        // Modals
+        const metaModal = document.getElementById('meta-modal');
+        const passwordModal = document.getElementById('password-modal');
+        const modalCloseButtons = document.querySelectorAll('.modal .close-button');
+        const modalCancelButtons = document.querySelectorAll('.modal .cancel-button');
+        const saveMetaBtn = document.getElementById('save-meta-button');
+        const modalDocTitle = document.getElementById('modal-doc-title');
+        const modalDocAuthor = document.getElementById('modal-doc-author');
+        const modalDocDate = document.getElementById('modal-doc-date');
+        const promptPasswordInput = document.getElementById('prompt-password');
+        const submitPasswordBtn = document.getElementById('submit-password-button');
+
+
+        let db;
+        let currentDocId = null;
+        let autoSaveTimer = null;
+        const AUTO_SAVE_DELAY = 2000; // 2 seconds
+        let currentLanguage = 'en';
+        let currentPasswordAttempt = { docId: null, action: null }; // For password modal callback
+
+        const lang = {
+            en: {
+                appTitle: "Paper Making Software",
+                newDocTooltip: "New Document",
+                saveDocTooltip: "Save Document",
+                printPdfTooltip: "Print / Save as PDF",
+                paragraph: "Paragraph",
+                colorLabel: "Color:",
+                imageLabel: "Image:",
+                draftsTitle: "Drafts",
+                searchPlaceholder: "Search drafts...",
+                docInfoTitle: "Document Info",
+                titleLabel: "Title:",
+                authorLabel: "Author:",
+                dateLabel: "Date:",
+                settingsTitle: "Settings",
+                fontFamilyLabel: "Font Family:",
+                fontSizeLabel: "Font Size (px):",
+                lineHeightLabel: "Line Spacing:",
+                headerFooterTitle: "Header/Footer",
+                headerLeftLabel: "Header Left:",
+                headerRightLabel: "Header Right:",
+                footerLeftLabel: "Footer Left:",
+                footerRightLabel: "Footer Right:",
+                backupRestoreTitle: "Backup/Restore",
+                backupButton: "Backup Data",
+                restoreLabel: "Restore Data",
+                templatesTitle: "Templates",
+                selectTemplateOption: "Select Template...",
+                templateEssay: "Essay",
+                templateNotes: "Notes",
+                templateAssignment: "Assignment",
+                templateTestPaper: "Test Paper",
+                wordCountText: "Words:",
+                charCountText: "Characters:",
+                statusReady: "Ready",
+                statusSaving: "Saving...",
+                statusSaved: "Saved",
+                statusLoading: "Loading...",
+                statusError: "Error",
+                statusNoDrafts: "No drafts found.",
+                confirmDelete: "Are you sure you want to delete this draft?",
+                deleteButton: "Delete",
+                editButton: "Edit",
+                docDetailsTitle: "Document Details",
+                cancelButton: "Cancel",
+                saveButton: "Save",
+                passwordPromptTitle: "Password Required",
+                enterPasswordLabel: "Enter Password:",
+                submitButton: "Submit",
+                incorrectPassword: "Incorrect password.",
+                backupSuccess: "Data backed up successfully.",
+                backupError: "Error backing up data.",
+                restoreSuccess: "Data restored successfully. Please reload.",
+                restoreError: "Error restoring data.",
+                restoreConfirm: "Restoring data will overwrite current drafts. Continue?",
+                darkModeLabel: "Dark Mode",
+                languageLabel: "Urdu",
+            },
+            ur: {
+                appTitle: "کاغذ سازی سافٹ ویئر",
+                newDocTooltip: "نیا دستاویز",
+                saveDocTooltip: "دستاویز محفوظ کریں",
+                printPdfTooltip: "پرنٹ / پی ڈی ایف کے طور پر محفوظ کریں",
+                paragraph: "پیراگراف",
+                colorLabel: "رنگ:",
+                imageLabel: "تصویر:",
+                draftsTitle: "مسودے",
+                searchPlaceholder: "مسودے تلاش کریں...",
+                docInfoTitle: "دستاویز کی معلومات",
+                titleLabel: "عنوان:",
+                authorLabel: "مصنف:",
+                dateLabel: "تاریخ:",
+                settingsTitle: "ترتیبات",
+                fontFamilyLabel: "فونٹ فیملی:",
+                fontSizeLabel: "فونٹ سائز (px):",
+                lineHeightLabel: "لائن وقفہ:",
+                headerFooterTitle: "ہیڈر/فوٹر",
+                headerLeftLabel: "ہیڈر بائیں:",
+                headerRightLabel: "ہیڈر دائیں:",
+                footerLeftLabel: "فوٹر بائیں:",
+                footerRightLabel: "فوٹر دائیں:",
+                backupRestoreTitle: "بیک اپ/بحال",
+                backupButton: "ڈیٹا بیک اپ کریں",
+                restoreLabel: "ڈیٹا بحال کریں",
+                templatesTitle: "ٹیمپلیٹس",
+                selectTemplateOption: "ٹیمپلیٹ منتخب کریں...",
+                templateEssay: "مضمون",
+                templateNotes: "نوٹس",
+                templateAssignment: "اسائنمنٹ",
+                templateTestPaper: "ٹیسٹ پیپر",
+                wordCountText: "الفاظ:",
+                charCountText: "حروف:",
+                statusReady: "تیار",
+                statusSaving: "محفوظ کیا جا رہا ہے...",
+                statusSaved: "محفوظ",
+                statusLoading: "لوڈ ہو رہا ہے...",
+                statusError: "خرابی",
+                statusNoDrafts: "کوئی مسودہ نہیں ملا۔",
+                confirmDelete: "کیا آپ واقعی اس مسودے کو حذف کرنا چاہتے ہیں؟",
+                deleteButton: "حذف کریں",
+                editButton: "ترمیم",
+                docDetailsTitle: "دستاویز کی تفصیلات",
+                cancelButton: "منسوخ کریں",
+                saveButton: "محفوظ کریں",
+                passwordPromptTitle: "پاس ورڈ درکار ہے",
+                enterPasswordLabel: "پاس ورڈ درج کریں:",
+                submitButton: "جمع کرائیں",
+                incorrectPassword: "غلط پاس ورڈ۔",
+                backupSuccess: "ڈیٹا کامیابی سے بیک اپ ہوگیا۔",
+                backupError: "ڈیٹا بیک اپ کرنے میں خرابی۔",
+                restoreSuccess: "ڈیٹا کامیابی سے بحال ہوگیا۔ براہ کرم دوبارہ لوڈ کریں۔",
+                restoreError: "ڈیٹا بحال کرنے میں خرابی۔",
+                restoreConfirm: "ڈیٹا بحال کرنے سے موجودہ مسودے مٹ جائیں گے۔ جاری رکھیں؟",
+                darkModeLabel: "ڈارک موڈ",
+                languageLabel: "English",
+            }
+        };
+
+        function setLanguage(language) {
+            currentLanguage = language;
+            const elements = document.querySelectorAll('[data-lang-key]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-lang-key');
+                const translation = lang[language][key];
+                if (translation) {
+                    if (el.tagName === 'INPUT' && el.placeholder) {
+                        el.placeholder = translation;
+                    } else if (el.title) {
+                         el.title = translation;
+                    } else {
+                        el.textContent = translation;
+                    }
+                }
+            });
+
+            // Set direction
+            const htmlEl = document.documentElement;
+            const bodyEl = document.body;
+            const editorEl = document.getElementById('editor');
+            if (language === 'ur') {
+                htmlEl.setAttribute('lang', 'ur');
+                htmlEl.setAttribute('dir', 'rtl');
+                bodyEl.setAttribute('dir', 'rtl');
+                editorEl.setAttribute('dir', 'rtl');
+                toggleLanguageBtn.textContent = lang.ur.languageLabel; // Shows 'English'
+                toggleLanguageBtn.title = "Switch to English";
+                paperSheet.style.fontFamily = fontFamilySelect.value.includes('Nastaliq') || fontFamilySelect.value.includes('Jameel')
+                    ? fontFamilySelect.value
+                    : "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif"; // Force Urdu font if not selected
+            } else {
+                htmlEl.setAttribute('lang', 'en');
+                htmlEl.setAttribute('dir', 'ltr');
+                bodyEl.setAttribute('dir', 'ltr');
+                editorEl.setAttribute('dir', 'ltr');
+                toggleLanguageBtn.textContent = lang.en.languageLabel; // Shows 'Urdu'
+                toggleLanguageBtn.title = "Switch to Urdu";
+                paperSheet.style.fontFamily = fontFamilySelect.value; // Use selected font
+            }
+            localStorage.setItem('paperMakerLanguage', language);
+            updateWordCount();
+            applyFontSettings();
+        }
+
+        function toggleLanguage() {
+            setLanguage(currentLanguage === 'en' ? 'ur' : 'en');
+        }
+
+        function updateStatus(key) {
+             saveStatusEl.textContent = lang[currentLanguage][key] || key;
+        }
+
+        // --- IndexedDB Functions ---
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('PaperMakerDB', 3);
+
+                request.onerror = (event) => {
+                    console.error("Database error:", event.target.error);
+                    updateStatus('statusError');
+                    reject("Database error: " + event.target.error);
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    console.log("Database opened successfully.");
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    console.log("Upgrading database...");
+                    if (!db.objectStoreNames.contains('papers')) {
+                        const objectStore = db.createObjectStore('papers', { keyPath: 'id', autoIncrement: true });
+                        objectStore.createIndex('title', 'title', { unique: false });
+                        objectStore.createIndex('lastModified', 'lastModified', { unique: false });
+                        console.log("Created 'papers' object store.");
+                    }
+                     if (event.oldVersion < 3) {
+                         const transaction = event.target.transaction;
+                         if (transaction) {
+                            const paperStore = transaction.objectStore('papers');
+                            console.log("Updated 'papers' store schema check (no specific action needed for adding non-indexed field).");
+                         }
+                     }
+                };
+            });
+        }
+
+        function savePaper(paperData) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("Database not initialized.");
+                const transaction = db.transaction(['papers'], 'readwrite');
+                const store = transaction.objectStore('papers');
+
+                paperData.lastModified = new Date();
+
+                let request;
+                if (paperData.id) {
+                    // Update existing: Use put
+                    request = store.put(paperData);
+                } else {
+                    // Add new: Use add, ensuring 'id' is not present
+                    const { id, ...dataToAdd } = paperData; // Create object without id
+                    request = store.add(dataToAdd);
+                }
+
+                request.onsuccess = (event) => {
+                    resolve(event.target.result); // Returns the key (id)
+                };
+
+                request.onerror = (event) => {
+                    console.error("Error saving paper:", event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        function getPaper(id) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("Database not initialized.");
+                // Ensure id is a number if it comes from dataset
+                const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+                if (isNaN(numericId)) {
+                    return reject("Invalid ID provided for getPaper");
+                }
+
+                const transaction = db.transaction(['papers'], 'readonly');
+                const store = transaction.objectStore('papers');
+                const request = store.get(numericId);
+
+                request.onsuccess = (event) => {
+                    resolve(event.target.result);
+                };
+
+                request.onerror = (event) => {
+                    console.error("Error getting paper:", event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        function getAllPapers() {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("Database not initialized.");
+                const transaction = db.transaction(['papers'], 'readonly');
+                const store = transaction.objectStore('papers');
+                const index = store.index('lastModified');
+                const request = index.getAll(); // Get all records using the index
+
+                request.onsuccess = (event) => {
+                    // Sort results manually after getting them all
+                    const sortedResults = event.target.result.sort((a, b) => {
+                        // Ensure dates are compared correctly
+                        const dateA = a.lastModified instanceof Date ? a.lastModified.getTime() : 0;
+                        const dateB = b.lastModified instanceof Date ? b.lastModified.getTime() : 0;
+                        return dateB - dateA; // Descending sort
+                    });
+                    resolve(sortedResults);
+                };
+
+                request.onerror = (event) => {
+                    console.error("Error getting all papers:", event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+
+
+        function deletePaper(id) {
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("Database not initialized.");
+                 // Ensure id is a number
+                const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+                 if (isNaN(numericId)) {
+                     return reject("Invalid ID provided for deletePaper");
+                 }
+
+                const transaction = db.transaction(['papers'], 'readwrite');
+                const store = transaction.objectStore('papers');
+                const request = store.delete(numericId);
+
+                request.onsuccess = () => {
+                    resolve();
+                };
+
+                request.onerror = (event) => {
+                    console.error("Error deleting paper:", event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        // --- Editor Functions ---
+        function executeCommand(command, value = null) {
+            document.execCommand(command, false, value);
+            editor.focus();
+            triggerAutoSave();
+        }
+
+        function formatBlock(value) {
+             executeCommand('formatBlock', value === 'P' ? 'div' : `<${value}>`);
+        }
+
+        function insertImage(dataUrl) {
+            const img = `<img src="${dataUrl}" alt="Uploaded Image" style="max-width: 100%; height: auto;">`;
+            executeCommand('insertHTML', img);
+        }
+
+        function updateWordCount() {
+            const text = editor.textContent || "";
+            const words = text.trim().split(/\s+/).filter(Boolean);
+            const chars = text.length;
+            wordCountEl.textContent = `${lang[currentLanguage].wordCountText} ${words.length}`;
+            charCountEl.textContent = `${lang[currentLanguage].charCountText} ${chars}`;
+        }
+
+        function triggerAutoSave() {
+            updateStatus('statusSaving');
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
+            }
+            autoSaveTimer = setTimeout(() => {
+                saveCurrentDoc(false); // Save without showing modal
+            }, AUTO_SAVE_DELAY);
+        }
+
+        async function saveCurrentDoc(showModal = true) {
+            clearTimeout(autoSaveTimer);
+            const content = editor.innerHTML;
+            const title = docTitleInput.value.trim() || `Untitled Document ${new Date().toLocaleTimeString()}`;
+            const author = docAuthorInput.value.trim();
+            const date = docDateInput.value;
+            const settings = getCurrentSettings();
+
+            const paperData = {
+                id: currentDocId, // May be null for new docs
+                title: title,
+                author: author,
+                date: date,
+                content: content,
+                settings: settings,
+            };
+
+            if (showModal && !currentDocId) {
+                openMetaModal(paperData);
+            } else {
+                 try {
+                    const savedId = await savePaper(paperData);
+                    if (!currentDocId) {
+                        currentDocId = savedId;
+                        if (docTitleInput.value.trim() === '') {
+                            docTitleInput.value = title;
+                        }
+                    }
+                    updateStatus('statusSaved');
+                    loadDrafts(); // Refresh list
+                 } catch (error) {
+                     console.error("Failed to save:", error);
+                     updateStatus('statusError');
+                 }
+            }
+        }
+
+         function openMetaModal(paperData = {}) {
+             modalDocTitle.value = paperData.title || '';
+             modalDocAuthor.value = paperData.author || '';
+             modalDocDate.value = paperData.date || new Date().toISOString().split('T')[0];
+             metaModal.style.display = 'block';
+             modalDocTitle.focus();
+         }
+
+         async function handleSaveMeta() {
+             const title = modalDocTitle.value.trim();
+             if (!title) {
+                 alert("Title is required.");
+                 return;
+             }
+             const author = modalDocAuthor.value.trim();
+             const date = modalDocDate.value;
+             const content = editor.innerHTML;
+             const settings = getCurrentSettings();
+
+             const paperData = {
+                 id: currentDocId, // Will be null if it's a brand new doc
+                 title: title,
+                 author: author,
+                 date: date,
+                 content: content,
+                 settings: settings,
+             };
+
+             try {
+                 updateStatus('statusSaving');
+                 const savedId = await savePaper(paperData);
+                 currentDocId = savedId;
+                 docTitleInput.value = title;
+                 docAuthorInput.value = author;
+                 docDateInput.value = date;
+                 closeModal(metaModal);
+                 updateStatus('statusSaved');
+                 loadDrafts(); // Refresh list
+             } catch (error) {
+                 console.error("Failed to save from modal:", error);
+                 updateStatus('statusError');
+                 alert("Error saving document.");
+             }
+         }
+
+        function loadDoc(id) {
+            updateStatus('statusLoading');
+            getPaper(id)
+                .then(paper => {
+                    if (paper) {
+                         loadPaperContent(paper);
+                    } else {
+                        console.error("Document not found:", id);
+                        updateStatus('statusError');
+                        createNewDoc();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error loading document:", error);
+                    updateStatus('statusError');
+                });
+        }
+
+         function loadPaperContent(paper) {
+             editor.innerHTML = paper.content || '';
+             docTitleInput.value = paper.title || '';
+             docAuthorInput.value = paper.author || '';
+             docDateInput.value = paper.date || '';
+             currentDocId = paper.id;
+             applySettings(paper.settings);
+             updateWordCount();
+             updateStatus('statusReady');
+             highlightDraft(paper.id);
+             if (passwordModal.style.display === 'block' && currentPasswordAttempt.docId === paper.id) {
+                 closeModal(passwordModal);
+             }
+         }
+
+         function highlightDraft(id) {
+             const items = draftsList.querySelectorAll('li');
+             items.forEach(item => {
+                 // Ensure comparison is between numbers if id is number
+                 const itemId = parseInt(item.dataset.id, 10);
+                 if (itemId === id) {
+                     item.classList.add('selected');
+                 } else {
+                     item.classList.remove('selected');
+                 }
+             });
+         }
+
+         function createNewDoc() {
+             editor.innerHTML = '';
+             docTitleInput.value = '';
+             docAuthorInput.value = '';
+             docDateInput.value = new Date().toISOString().split('T')[0];
+             currentDocId = null;
+             applySettings(getDefaultSettings());
+             updateWordCount();
+             updateStatus('statusReady');
+             highlightDraft(null);
+             editor.focus();
+         }
+
+        async function handleDeleteDoc(id, title) {
+            confirmAndDelete(id, title);
+        }
+
+         function confirmAndDelete(id, title) {
+             if (confirm(`${lang[currentLanguage].confirmDelete}\n"${title}"`)) {
+                 deletePaper(id)
+                     .then(() => {
+                         console.log("Deleted paper:", id);
+                         if (currentDocId === id) {
+                             createNewDoc();
+                         }
+                         loadDrafts();
+                     })
+                     .catch(error => {
+                         console.error("Error deleting paper:", error);
+                         updateStatus('statusError');
+                     });
+             }
+         }
+
+        function loadDrafts(filter = '') {
+            getAllPapers()
+                .then(papers => {
+                    draftsList.innerHTML = ''; // Clear existing list
+                    const filteredPapers = papers.filter(p =>
+                        p.title.toLowerCase().includes(filter.toLowerCase()) ||
+                        (p.author && p.author.toLowerCase().includes(filter.toLowerCase()))
+                    );
+
+                    if (filteredPapers.length === 0) {
+                        draftsList.innerHTML = `<li>${lang[currentLanguage].statusNoDrafts}</li>`;
+                        return;
+                    }
+
+                    filteredPapers.forEach(paper => {
+                        const li = document.createElement('li');
+                        li.dataset.id = paper.id;
+                        li.textContent = paper.title || 'Untitled';
+                        li.title = `Author: ${paper.author || 'N/A'}, Modified: ${new Date(paper.lastModified).toLocaleString()}`;
+                         if (paper.id === currentDocId) {
+                             li.classList.add('selected');
+                         }
+
+                        const actionsDiv = document.createElement('div');
+                        actionsDiv.className = 'draft-actions';
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = '🗑️';
+                        deleteBtn.title = lang[currentLanguage].deleteButton;
+                        deleteBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            handleDeleteDoc(paper.id, paper.title);
+                        };
+
+                        actionsDiv.appendChild(deleteBtn);
+                        li.appendChild(actionsDiv);
+
+                        li.onclick = () => {
+                            // Ensure IDs are compared correctly (e.g., both numbers)
+                            const paperIdNumeric = typeof paper.id === 'string' ? parseInt(paper.id, 10) : paper.id;
+                            const currentIdNumeric = typeof currentDocId === 'string' ? parseInt(currentDocId, 10) : currentDocId;
+                            if (currentIdNumeric !== paperIdNumeric) {
+                                loadDoc(paper.id);
+                            }
+                        };
+
+
+                        draftsList.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error loading drafts:", error);
+                    draftsList.innerHTML = `<li>${lang[currentLanguage].statusError}</li>`;
+                });
+        }
+
+        // --- Settings Functions ---
+        function applySettings(settings = {}) {
+            const effectiveSettings = { ...getDefaultSettings(), ...settings };
+
+            fontFamilySelect.value = effectiveSettings.fontFamily;
+            fontSizeInput.value = effectiveSettings.fontSize.replace('px','');
+            lineHeightInput.value = effectiveSettings.lineHeight;
+
+            headerLeftInput.value = effectiveSettings.headerLeft;
+            headerRightInput.value = effectiveSettings.headerRight;
+            footerLeftInput.value = effectiveSettings.footerLeft;
+            footerRightInput.value = effectiveSettings.footerRight;
+
+            applyFontSettings();
+            applyHeaderFooter();
+             applyPageLayout(effectiveSettings.layout);
+        }
+
+        function applyFontSettings() {
+            const fontSize = `${fontSizeInput.value}px`;
+            const lineHeight = lineHeightInput.value;
+            const fontFamily = fontFamilySelect.value;
+
+            paperSheet.style.fontSize = fontSize;
+            paperSheet.style.lineHeight = lineHeight;
+             if (currentLanguage === 'ur') {
+                 paperSheet.style.fontFamily = fontFamily.includes('Nastaliq') || fontFamily.includes('Jameel')
+                     ? fontFamily
+                     : "'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif";
+             } else {
+                 paperSheet.style.fontFamily = fontFamily;
+             }
+
+            const fontColor = document.getElementById('font-color')?.value;
+            if (fontColor) {
+                 // paperSheet.style.color = fontColor; // Avoid applying globally
+            }
+            // No auto-save here, triggered by input/change events on controls
+        }
+
+         function applyHeaderFooter() {
+             headerLeftContent.textContent = headerLeftInput.value;
+             headerRightContent.textContent = headerRightInput.value;
+             footerLeftContent.textContent = footerLeftInput.value;
+             footerRightContent.textContent = footerRightInput.value;
+             // No auto-save here, triggered by input events on controls
+         }
+
+         function applyPageLayout(layout = {}) {
+             const { pageSize = 'A4', margin = '20mm' } = layout;
+             document.documentElement.style.setProperty('--margin-normal', margin);
+             // No auto-save here, settings saved together
+         }
+
+
+        function getCurrentSettings() {
+            return {
+                fontFamily: fontFamilySelect.value,
+                fontSize: `${fontSizeInput.value}px`,
+                lineHeight: lineHeightInput.value,
+                headerLeft: headerLeftInput.value,
+                headerRight: headerRightInput.value,
+                footerLeft: footerLeftInput.value,
+                footerRight: footerRightInput.value,
+                layout: {
+                    pageSize: 'A4',
+                    margin: document.documentElement.style.getPropertyValue('--margin-normal') || '20mm'
+                }
+            };
+        }
+
+        function getDefaultSettings() {
+             return {
+                fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                fontSize: "16px",
+                lineHeight: "1.6",
+                headerLeft: "",
+                headerRight: "",
+                footerLeft: "",
+                footerRight: "",
+                layout: { pageSize: 'A4', margin: '20mm' }
+            };
+        }
+
+        // --- UI Event Listeners ---
+        toolbar.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON' && e.target.dataset.command) {
+                executeCommand(e.target.dataset.command);
+            } else if (e.target.tagName === 'SELECT' && e.target.dataset.command) {
+                if (e.target.dataset.command === 'formatBlock') {
+                    formatBlock(e.target.value);
+                } else {
+                    executeCommand(e.target.dataset.command, e.target.value);
+                }
+            }
+        });
+
+         toolbar.addEventListener('change', (e) => {
+             if (e.target.tagName === 'INPUT' && e.target.type === 'color' && e.target.dataset.command) {
+                 executeCommand(e.target.dataset.command, e.target.value);
+             } else if (e.target.tagName === 'SELECT' && e.target.dataset.command) {
+                 if (e.target.dataset.command === 'formatBlock') {
+                     formatBlock(e.target.value);
+                 }
+             }
+         });
+
+        editor.addEventListener('input', () => {
+            updateWordCount();
+            triggerAutoSave();
+        });
+
+        // Settings listeners - trigger save on change
+        fontFamilySelect.addEventListener('change', () => { applyFontSettings(); triggerAutoSave(); });
+        fontSizeInput.addEventListener('input', () => { applyFontSettings(); triggerAutoSave(); });
+        lineHeightInput.addEventListener('input', () => { applyFontSettings(); triggerAutoSave(); });
+        headerLeftInput.addEventListener('input', () => { applyHeaderFooter(); triggerAutoSave(); });
+        headerRightInput.addEventListener('input', () => { applyHeaderFooter(); triggerAutoSave(); });
+        footerLeftInput.addEventListener('input', () => { applyHeaderFooter(); triggerAutoSave(); });
+        footerRightInput.addEventListener('input', () => { applyHeaderFooter(); triggerAutoSave(); });
+
+
+        // Sidebar listeners
+        searchDraftsInput.addEventListener('input', (e) => {
+            loadDrafts(e.target.value);
+        });
+
+        newDocBtn.addEventListener('click', createNewDoc);
+        saveDocBtn.addEventListener('click', () => saveCurrentDoc(true)); // Show modal on manual save
+        printDocBtn.addEventListener('click', () => window.print());
+
+        // Dark Mode
+        function setDarkMode(isDark) {
+            document.body.dataset.theme = isDark ? 'dark' : 'light';
+            toggleDarkModeBtn.textContent = isDark ? '☀️' : '🌙';
+            toggleDarkModeBtn.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+            localStorage.setItem('paperMakerTheme', isDark ? 'dark' : 'light');
+            const fontColorPicker = document.getElementById('font-color');
+            if (fontColorPicker) {
+                fontColorPicker.value = isDark ? '#ffffff' : '#000000';
+            }
+        }
+
+        toggleDarkModeBtn.addEventListener('click', () => {
+            const isCurrentlyDark = document.body.dataset.theme === 'dark';
+            setDarkMode(!isCurrentlyDark);
+        });
+
+        // Language Toggle
+        toggleLanguageBtn.addEventListener('click', toggleLanguage);
+
+         // Image Handling
+         insertImageBtn.addEventListener('click', () => imageUploadInput.click());
+
+         imageUploadInput.addEventListener('change', (event) => {
+             const file = event.target.files[0];
+             if (file && file.type.startsWith('image/')) {
+                 const reader = new FileReader();
+                 reader.onload = (e) => {
+                     insertImage(e.target.result);
+                 }
+                 reader.readAsDataURL(file);
+             }
+             event.target.value = null;
+         });
+
+         // Drag and Drop Image Upload
+         function preventDefaults(e) {
+             e.preventDefault();
+             e.stopPropagation();
+         }
+
+         function highlight(e) {
+             editorDropzone.classList.add('drag-over');
+         }
+
+         function unhighlight(e) {
+             editorDropzone.classList.remove('drag-over');
+         }
+
+         function handleDrop(e) {
+             preventDefaults(e);
+             unhighlight(e);
+             const dt = e.dataTransfer;
+             const files = dt.files;
+
+             if (files.length > 0) {
+                 const file = files[0];
+                 if (file.type.startsWith('image/')) {
+                     const reader = new FileReader();
+                     reader.onload = (ev) => {
+                         editor.focus();
+                         insertImage(ev.target.result);
+                     }
+                     reader.readAsDataURL(file);
+                 }
+             }
+         }
+
+         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+             editorDropzone.addEventListener(eventName, preventDefaults, false);
+             document.body.addEventListener(eventName, preventDefaults, false);
+         });
+
+         ['dragenter', 'dragover'].forEach(eventName => {
+             editorDropzone.addEventListener(eventName, highlight, false);
+         });
+
+         ['dragleave', 'drop'].forEach(eventName => {
+             editorDropzone.addEventListener(eventName, unhighlight, false);
+         });
+
+         editorDropzone.addEventListener('drop', handleDrop, false);
+
+         // Backup and Restore
+         backupBtn.addEventListener('click', async () => {
+             try {
+                 const papers = await getAllPapers();
+                 const dataToBackup = {
+                     version: 1,
+                     papers: papers,
+                 };
+                 const jsonString = JSON.stringify(dataToBackup, null, 2);
+                 const blob = new Blob([jsonString], { type: 'application/json' });
+                 const url = URL.createObjectURL(blob);
+                 const a = document.createElement('a');
+                 a.href = url;
+                 a.download = `papermaker_backup_${new Date().toISOString().split('T')[0]}.json`;
+                 document.body.appendChild(a);
+                 a.click();
+                 document.body.removeChild(a);
+                 URL.revokeObjectURL(url);
+                 alert(lang[currentLanguage].backupSuccess);
+             } catch (error) {
+                 console.error("Backup failed:", error);
+                 alert(lang[currentLanguage].backupError);
+             }
+         });
+
+         restoreLabel.addEventListener('click', () => restoreInput.click());
+
+         restoreInput.addEventListener('change', (event) => {
+             const file = event.target.files[0];
+             if (file && file.type === 'application/json') {
+                 if (!confirm(lang[currentLanguage].restoreConfirm)) {
+                     event.target.value = null;
+                     return;
+                 }
+
+                 const reader = new FileReader();
+                 reader.onload = async (e) => {
+                     try {
+                         const backupData = JSON.parse(e.target.result);
+                         if (!backupData || !backupData.papers || backupData.version !== 1) {
+                             throw new Error("Invalid backup file format.");
+                         }
+
+                         if (!db) {
+                             throw new Error("Database not initialized for restore.");
+                         }
+
+                         const clearTransaction = db.transaction(['papers'], 'readwrite');
+                         const clearStore = clearTransaction.objectStore('papers');
+                         const clearRequest = clearStore.clear();
+
+                         clearRequest.onerror = (err) => { throw err.target.error; } ;
+
+                         clearRequest.onsuccess = async () => {
+                             const addTransaction = db.transaction(['papers'], 'readwrite');
+                             const addStore = addTransaction.objectStore('papers');
+                             let errors = [];
+
+                             for (const paper of backupData.papers) {
+                                 const { id, ...paperToAdd } = paper; // Remove old ID
+                                 if (typeof paperToAdd.lastModified === 'string') {
+                                     paperToAdd.lastModified = new Date(paperToAdd.lastModified);
+                                 } else if (!(paperToAdd.lastModified instanceof Date)) {
+                                     paperToAdd.lastModified = new Date(); // Fallback if invalid
+                                 }
+
+                                 const addRequest = addStore.add(paperToAdd);
+                                 addRequest.onerror = (errEvent) => {
+                                     console.error("Error adding paper during restore:", errEvent.target.error, paperToAdd);
+                                     errors.push(paperToAdd.title || 'Untitled');
+                                 };
+                             }
+
+                             addTransaction.oncomplete = () => {
+                                 if (errors.length > 0) {
+                                     alert(`${lang[currentLanguage].restoreError}\nCould not restore: ${errors.join(', ')}`);
+                                 } else {
+                                     alert(lang[currentLanguage].restoreSuccess);
+                                 }
+                                 createNewDoc();
+                                 loadDrafts();
+                             };
+                             addTransaction.onerror = (errEvent) => {
+                                 console.error("Restore transaction failed:", errEvent.target.error);
+                                 alert(lang[currentLanguage].restoreError);
+                             };
+                         };
+
+                     } catch (error) {
+                         console.error("Restore failed:", error);
+                         alert(`${lang[currentLanguage].restoreError}\n${error.message}`);
+                     } finally {
+                          event.target.value = null;
+                     }
+                 };
+                 reader.readAsText(file);
+             } else if (file) {
+                 alert("Please select a valid JSON backup file.");
+                 event.target.value = null;
+             }
+         });
+
+         // --- Modal Handling ---
+         function closeModal(modal) {
+             modal.style.display = 'none';
+             if (modal === passwordModal) {
+                 promptPasswordInput.value = '';
+                 currentPasswordAttempt = { docId: null, action: null };
+             }
+         }
+
+         modalCloseButtons.forEach(button => {
+             button.addEventListener('click', () => closeModal(button.closest('.modal')));
+         });
+
+         modalCancelButtons.forEach(button => {
+             button.addEventListener('click', () => closeModal(button.closest('.modal')));
+         });
+
+         window.addEventListener('click', (event) => {
+             if (event.target.classList.contains('modal')) {
+                 closeModal(event.target);
+             }
+         });
+
+         saveMetaBtn.addEventListener('click', handleSaveMeta);
+
+         // --- Password Modal Logic (Placeholder - Not fully implemented) ---
+         function openPasswordModal() {
+             promptPasswordInput.value = '';
+             passwordModal.style.display = 'block';
+             promptPasswordInput.focus();
+         }
+
+         submitPasswordBtn.addEventListener('click', async () => {
+             // This function remains as a placeholder if password feature is added later
+             // Currently, password checks are commented out in load/delete functions
+             const enteredPassword = promptPasswordInput.value;
+             if (!enteredPassword || !currentPasswordAttempt.docId || !currentPasswordAttempt.action) {
+                 closeModal(passwordModal);
+                 return;
+             }
+              alert("Password functionality not fully implemented in this version.");
+              closeModal(passwordModal);
+
+             // Example of how it *would* work:
+             /*
+             try {
+                 const paper = await getPaper(currentPasswordAttempt.docId);
+                 if (paper && paper.password === enteredPassword) { // Assuming paper.password exists
+                     if (currentPasswordAttempt.action === 'load') {
+                         loadPaperContent(paper);
+                     } else if (currentPasswordAttempt.action === 'delete') {
+                         closeModal(passwordModal);
+                         confirmAndDelete(paper.id, paper.title);
+                     }
+                 } else {
+                     alert(lang[currentLanguage].incorrectPassword);
+                     promptPasswordInput.value = '';
+                     promptPasswordInput.focus();
+                 }
+             } catch (error) {
+                 console.error("Password check error:", error);
+                 alert("Error checking password.");
+                 closeModal(passwordModal);
+             }
+             */
+         });
+
+
+        // --- Initialization ---
+        async function initializeApp() {
+            try {
+                await initDB();
+                const savedTheme = localStorage.getItem('paperMakerTheme');
+                setDarkMode(savedTheme === 'dark');
+                const savedLang = localStorage.getItem('paperMakerLanguage') || 'en';
+                setLanguage(savedLang);
+
+                loadDrafts();
+                createNewDoc();
+                updateStatus('statusReady');
+            } catch (error) {
+                console.error("Initialization failed:", error);
+                alert("Error initializing the application. Please check console for details.");
+                document.body.innerHTML = "<h1>Error initializing application. Cannot continue.</h1>";
+            }
+        }
+
+        initializeApp();
+
+
+
+
+
+
+
+
+    </script>
+</body>
+</html>

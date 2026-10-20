@@ -1,0 +1,2387 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paper Making Software</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --text-color: #333;
+            --bg-color: #fff;
+            --border-color: #ddd;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --urdu-font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #2980b9;
+            --secondary-color: #34495e;
+            --text-color: #f5f5f5;
+            --bg-color: #1a1a1a;
+            --border-color: #333;
+            --accent-color: #c0392b;
+            --success-color: #27ae60;
+            --warning-color: #d35400;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            transition: all 0.3s ease;
+        }
+
+        body.urdu {
+            direction: rtl;
+            font-family: var(--urdu-font-family);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .toolbar button, .action-btn {
+            padding: 0.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .toolbar button:hover, .action-btn:hover {
+            background-color: var(--accent-color);
+        }
+
+        .toolbar select, .toolbar input {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--bg-color);
+            border-right: 1px solid var(--border-color);
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 1rem;
+        }
+
+        .paper-list {
+            list-style: none;
+        }
+
+        .paper-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .paper-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .paper-item.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .metadata {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .metadata .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+        }
+
+        .metadata input {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .editor-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .section-controls {
+            padding: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .editor-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .editor-section {
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .section-title {
+            font-weight: bold;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .section-body {
+            padding: 1rem;
+            min-height: 100px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .editable {
+            outline: none;
+            min-height: 100px;
+            padding: 0.5rem;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 1rem;
+            background-color: var(--secondary-color);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-color);
+            padding: 2rem;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            margin-bottom: 1rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .preview-container {
+            width: 100%;
+            max-width: 21cm;
+            min-height: 29.7cm;
+            margin: 0 auto;
+            padding: 2cm;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            color: black;
+        }
+
+        .page {
+            margin-bottom: 1cm;
+            min-height: 25.7cm;
+            position: relative;
+            background-color: white;
+            padding: 1cm;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-header, .page-footer {
+            height: 1cm;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1cm;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .page-content {
+            min-height: 23.7cm;
+            padding: 1cm 0;
+        }
+
+        .settings-group {
+            margin-bottom: 1rem;
+        }
+
+        .settings-group h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .settings-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+        }
+
+        .password-protection {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .dropzone {
+            border: 2px dashed var(--border-color);
+            border-radius: 4px;
+            padding: 2rem;
+            text-align: center;
+            transition: border-color 0.3s;
+            margin-bottom: 1rem;
+        }
+
+        .dropzone.active {
+            border-color: var(--primary-color);
+        }
+
+        .auto-save-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+            margin-right: 0.5rem;
+        }
+
+        .auto-save-indicator.saving {
+            background-color: var(--warning-color);
+        }
+
+        @media print {
+            .container {
+                height: auto;
+            }
+            
+            .header, .toolbar, .sidebar, .metadata, .section-controls, .status-bar, .section-header {
+                display: none;
+            }
+            
+            .main {
+                display: block;
+            }
+            
+            .editor-container {
+                display: block;
+            }
+            
+            .editor-content {
+                padding: 0;
+                overflow: visible;
+            }
+            
+            .page {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .section-body {
+                border: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                max-height: 200px;
+            }
+        }
+
+        [contenteditable=true]:empty:before {
+            content: attr(data-placeholder);
+            color: #aaa;
+        }
+
+        .template-preview {
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .template-preview:hover {
+            border-color: var(--primary-color);
+        }
+
+        .template-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .template-description {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .language-toggle {
+            display: flex;
+            align-items: center;
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .language-toggle button {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: none;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .language-toggle button.active {
+            background-color: var(--primary-color);
+        }
+
+        .theme-toggle {
+            width: 60px;
+            height: 30px;
+            border-radius: 15px;
+            background-color: var(--secondary-color);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .theme-toggle::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            background-color: white;
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle.dark::after {
+            transform: translateX(30px);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<div class="logo lang-en">Paper Making Software</div>
+<div class="logo lang-ur">پیپر میکنگ سافٹ ویئر</div>
+<div class="controls">
+<div class="language-toggle">
+<button class="lang-toggle-en active">EN</button>
+<button class="lang-toggle-ur">UR</button>
+</div>
+<div class="theme-toggle"></div>
+</div>
+</div>
+
+        <div class="toolbar">
+            <button id="new-paper" class="lang-en">New Paper</button>
+            <button id="new-paper" class="lang-ur">نیا پیپر</button>
+            
+            <button id="save-paper" class="lang-en">Save</button>
+            <button id="save-paper" class="lang-ur">محفوظ کریں</button>
+            
+            <button id="preview-paper" class="lang-en">Preview</button>
+            <button id="preview-paper" class="lang-ur">پیش نظارہ</button>
+            
+            <button id="print-paper" class="lang-en">Print</button>
+            <button id="print-paper" class="lang-ur">پرنٹ</button>
+            
+            <button id="export-pdf" class="lang-en">Export PDF</button>
+            <button id="export-pdf" class="lang-ur">پی ڈی ایف بنائیں</button>
+            
+            <button id="settings-btn" class="lang-en">Settings</button>
+            <button id="settings-btn" class="lang-ur">ترتیبات</button>
+            
+            <button id="templates-btn" class="lang-en">Templates</button>
+            <button id="templates-btn" class="lang-ur">سانچے</button>
+            
+            <button id="backup-btn" class="lang-en">Backup/Restore</button>
+            <button id="backup-btn" class="lang-ur">بیک اپ/بحالی</button>
+            
+            <select id="font-family">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Times New Roman, serif">Times New Roman</option>
+                <option value="Courier New, monospace">Courier New</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="Verdana, sans-serif">Verdana</option>
+                <option value="Jameel Noori Nastaleeq, serif">Jameel Noori Nastaleeq</option>
+                <option value="Noto Nastaliq Urdu, serif">Noto Nastaliq Urdu</option>
+            </select>
+            
+            <select id="font-size">
+                <option value="10pt">10pt</option>
+                <option value="12pt" selected>12pt</option>
+                <option value="14pt">14pt</option>
+                <option value="16pt">16pt</option>
+                <option value="18pt">18pt</option>
+                <option value="24pt">24pt</option>
+            </select>
+            
+            <select id="heading-level">
+                <option value="p" class="lang-en">Paragraph</option>
+                <option value="p" class="lang-ur">پیراگراف</option>
+                <option value="h1" class="lang-en">Heading 1</option>
+                <option value="h1" class="lang-ur">سرخی 1</option>
+                <option value="h2" class="lang-en">Heading 2</option>
+                <option value="h2" class="lang-ur">سرخی 2</option>
+                <option value="h3" class="lang-en">Heading 3</option>
+                <option value="h3" class="lang-ur">سرخی 3</option>
+            </select>
+            
+            <button id="bold-btn"><b>B</b></button>
+            <button id="italic-btn"><i>I</i></button>
+            <button id="underline-btn"><u>U</u></button>
+            
+            <button id="align-left-btn">↞</button>
+            <button id="align-center-btn">↔</button>
+            <button id="align-right-btn">↠</button>
+            
+            <button id="list-ul-btn">-  List</button>
+            <button id="list-ol-btn">1. List</button>
+            
+            <input type="color" id="font-color" value="#000000">
+        </div>
+        
+        <div class="main">
+            <div class="sidebar">
+                <input type="text" class="search-box lang-en" placeholder="Search papers...">
+                <input type="text" class="search-box lang-ur" placeholder="پیپرز تلاش کریں...">
+                
+                <h3 class="lang-en">My Papers</h3>
+                <h3 class="lang-ur">میرے پیپرز</h3>
+                
+                <ul class="paper-list" id="paper-list"></ul>
+            </div>
+            
+            <div class="editor-container">
+                <div class="metadata">
+                    <div class="field">
+                        <label for="paper-title" class="lang-en">Title</label>
+                        <label for="paper-title" class="lang-ur">عنوان</label>
+                        <input type="text" id="paper-title">
+                    </div>
+                    
+                    <div class="field">
+                        <label for="paper-author" class="lang-en">Author</label>
+                        <label for="paper-author" class="lang-ur">مصنف</label>
+                        <input type="text" id="paper-author">
+                    </div>
+                    
+                    <div class="field">
+                        <label for="paper-date" class="lang-en">Date</label>
+                        <label for="paper-date" class="lang-ur">تاریخ</label>
+                        <input type="date" id="paper-date">
+                    </div>
+                </div>
+                
+                <div class="editor-wrapper">
+                    <div class="section-controls">
+                        <button id="add-section" class="lang-en">Add Section</button>
+                        <button id="add-section" class="lang-ur">سیکشن شامل کریں</button>
+                        
+                        <button id="add-image" class="lang-en">Insert Image</button>
+                        <button id="add-image" class="lang-ur">تصویر شامل کریں</button>
+                        
+                        <div class="dropzone" id="image-dropzone">
+                            <div class="lang-en">Drop images here</div>
+                            <div class="lang-ur">تصاویر یہاں ڈالیں</div>
+                        </div>
+                    </div>
+                    
+                    <div class="editor-content" id="editor-content"></div>
+                </div>
+                
+                <div class="status-bar">
+                    <div class="word-count">
+                        <span class="lang-en">Words: <span id="word-count">0</span></span>
+                        <span class="lang-ur">الفاظ: <span id="word-count-ur">0</span></span>
+                    </div>
+                    
+                    <div class="auto-save">
+                        <span class="auto-save-indicator"></span>
+                        <span class="lang-en">Auto-save: <span id="auto-save-status">On</span></span>
+                        <span class="lang-ur">آٹو سیو: <span id="auto-save-status-ur">آن</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Preview Modal -->
+    <div class="modal" id="preview-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title lang-en">Preview</div>
+                <div class="modal-title lang-ur">پیش نظارہ</div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-container" id="preview-container"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn lang-en" id="print-preview">Print</button>
+                <button class="action-btn lang-ur" id="print-preview">پرنٹ</button>
+                <button class="action-btn lang-en" id="close-preview">Close</button>
+                <button class="action-btn lang-ur" id="close-preview">بند کریں</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title lang-en">Settings</div>
+                <div class="modal-title lang-ur">ترتیبات</div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <h3 class="lang-en">Page Layout</h3>
+                    <h3 class="lang-ur">صفحہ کی ترتیب</h3>
+                    <div class="settings-row">
+                        <div class="settings-field">
+                            <label class="lang-en">Page Size</label>
+                            <label class="lang-ur">صفحہ کا سائز</label>
+                            <select id="page-size">
+                                <option value="a4">A4</option>
+                                <option value="letter">Letter</option>
+                                <option value="legal">Legal</option>
+                            </select>
+                        </div>
+                        <div class="settings-field">
+                            <label class="lang-en">Orientation</label>
+                            <label class="lang-ur">رخ</label>
+                            <select id="orientation">
+                                <option value="portrait" class="lang-en">Portrait</option>
+                                <option value="portrait" class="lang-ur">عمودی</option>
+                                <option value="landscape" class="lang-en">Landscape</option>
+                                <option value="landscape" class="lang-ur">افقی</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-field">
+                            <label class="lang-en">Margins (mm)</label>
+                            <label class="lang-ur">مارجن (ملی میٹر)</label>
+                            <input type="number" id="margin" value="25" min="0" max="100">
+                        </div>
+                        <div class="settings-field">
+                            <label class="lang-en">Line Spacing</label>
+                            <label class="lang-ur">سطر کا فاصلہ</label>
+                            <select id="line-spacing">
+                                <option value="1">1</option>
+                                <option value="1.15">1.15</option>
+                                <option value="1.5">1.5</option>
+                                <option value="2">2</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h3 class="lang-en">Header & Footer</h3>
+                    <h3 class="lang-ur">سرورق اور پاورق</h3>
+                    <div class="settings-row">
+                        <div class="settings-field">
+                            <label class="lang-en">School/Institution Name</label>
+                            <label class="lang-ur">اسکول/ادارہ کا نام</label>
+                            <input type="text" id="institution-name">
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-field">
+                            <label class="lang-en">Header Text</label>
+                            <label class="lang-ur">سرورق متن</label>
+                            <input type="text" id="header-text">
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-field">
+                            <label class="lang-en">Footer Text</label>
+                            <label class="lang-ur">پاورق متن</label>
+                            <input type="text" id="footer-text">
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-field">
+                            <label class="lang-en">Show Page Numbers</label>
+                            <label class="lang-ur">صفحہ نمبر دکھائیں</label>
+                            <select id="show-page-numbers">
+                                <option value="true" class="lang-en">Yes</option>
+                                <option value="true" class="lang-ur">ہاں</option>
+                                <option value="false" class="lang-en">No</option>
+                                <option value="false" class="lang-ur">نہیں</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-group password-protection">
+                    <h3 class="lang-en">Password Protection</h3>
+                    <h3 class="lang-ur">پاس ورڈ تحفظ</h3>
+                    <div class="settings-row">
+                        <div class="settings-field">
+                            <label class="lang-en">Enable Password</label>
+                            <label class="lang-ur">پاس ورڈ فعال کریں</label>
+                            <select id="enable-password">
+                                <option value="false" class="lang-en">No</option>
+                                <option value="false" class="lang-ur">نہیں</option>
+                                <option value="true" class="lang-en">Yes</option>
+                                <option value="true" class="lang-ur">ہاں</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="settings-row" id="password-fields" style="display: none;">
+                        <div class="settings-field">
+                            <label class="lang-en">Password</label>
+                            <label class="lang-ur">پاس ورڈ</label>
+                            <input type="password" id="password">
+                        </div>
+                        <div class="settings-field">
+                            <label class="lang-en">Confirm Password</label>
+                            <label class="lang-ur">پاس ورڈ کی تصدیق کریں</label>
+                            <input type="password" id="confirm-password">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn lang-en" id="save-settings">Save Settings</button>
+                <button class="action-btn lang-ur" id="save-settings">ترتیبات محفوظ کریں</button>
+                <button class="action-btn lang-en" id="close-settings">Cancel</button>
+                <button class="action-btn lang-ur" id="close-settings">منسوخ کریں</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Templates Modal -->
+    <div class="modal" id="templates-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title lang-en">Templates</div>
+                <div class="modal-title lang-ur">سانچے</div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="template-preview" data-template="essay">
+                    <div class="template-title lang-en">Essay</div>
+                    <div class="template-title lang-ur">مضمون</div>
+                    <div class="template-description lang-en">Standard essay template with introduction, body paragraphs, and conclusion.</div>
+                    <div class="template-description lang-ur">معیاری مضمون سانچہ بمع تعارف، متن اور اختتامیہ۔</div>
+                </div>
+                
+                <div class="template-preview" data-template="assignment">
+                    <div class="template-title lang-en">Assignment</div>
+                    <div class="template-title lang-ur">اسائنمنٹ</div>
+                    <div class="template-description lang-en">Academic assignment with title page, content sections, and references.</div>
+                    <div class="template-description lang-ur">تعلیمی اسائنمنٹ بمع عنوانی صفحہ، مشمولات اور حوالہ جات۔</div>
+                </div>
+                
+                <div class="template-preview" data-template="test">
+                    <div class="template-title lang-en">Test Paper</div>
+                    <div class="template-title lang-ur">امتحانی پرچہ</div>
+                    <div class="template-description lang-en">Exam template with multiple question types and marking scheme.</div>
+                    <div class="template-description lang-ur">امتحانی سانچہ بمع مختلف قسم کے سوالات اور نمبرات کی تقسیم۔</div>
+                </div>
+                
+                <div class="template-preview" data-template="notes">
+                    <div class="template-title lang-en">Notes</div>
+                    <div class="template-title lang-ur">نوٹس</div>
+                    <div class="template-description lang-en">Simple note-taking template with section headings.</div>
+                    <div class="template-description lang-ur">سادہ نوٹ سانچہ بمع سیکشن عنوانات۔</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Backup/Restore Modal -->
+    <div class="modal" id="backup-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title lang-en">Backup & Restore</div>
+                <div class="modal-title lang-ur">بیک اپ اور بحالی</div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <h3 class="lang-en">Backup</h3>
+                    <h3 class="lang-ur">بیک اپ</h3>
+                    <p class="lang-en">Create a backup of all your papers and settings.</p>
+                    <p class="lang-ur">اپنے تمام پیپرز اور ترتیبات کا بیک اپ بنائیں۔</p>
+                    <button class="action-btn lang-en" id="create-backup">Create Backup</button>
+                    <button class="action-btn lang-ur" id="create-backup">بیک اپ بنائیں</button>
+                </div>
+                
+                <div class="settings-group">
+                    <h3 class="lang-en">Restore</h3>
+                    <h3 class="lang-ur">بحالی</h3>
+                    <p class="lang-en">Restore your papers and settings from a backup file.</p>
+                    <p class="lang-ur">بیک اپ فائل سے اپنے پیپرز اور ترتیبات کو بحال کریں۔</p>
+                    <input type="file" id="restore-file" accept=".json">
+                    <button class="action-btn lang-en" id="restore-backup">Restore Backup</button>
+                    <button class="action-btn lang-ur" id="restore-backup">بیک اپ بحال کریں</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Password Modal -->
+    <div class="modal" id="password-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title lang-en">Enter Password</div>
+                <div class="modal-title lang-ur">پاس ورڈ درج کریں</div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-field">
+                    <label class="lang-en">This paper is password protected. Enter password to open:</label>
+                    <label class="lang-ur">یہ پیپر پاس ورڈ سے محفوظ ہے۔ کھولنے کے لیے پاس ورڈ درج کریں:</label>
+                    <input type="password" id="enter-password">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn lang-en" id="submit-password">Submit</button>
+                <button class="action-btn lang-ur" id="submit-password">جمع کرائیں</button>
+                <button class="action-btn lang-en" id="cancel-password">Cancel</button>
+                <button class="action-btn lang-ur" id="cancel-password">منسوخ کریں</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // IndexedDB initialization
+        let db;
+        const dbName = 'PaperMakingDB';
+        const dbVersion = 1;
+        
+        const request = indexedDB.open(dbName, dbVersion);
+        
+        request.onerror = function(event) {
+            console.error('IndexedDB error:', event.target.error);
+        };
+        
+        request.onupgradeneeded = function(event) {
+            db = event.target.result;
+            
+            // Create object stores
+            const papersStore = db.createObjectStore('papers', { keyPath: 'id', autoIncrement: true });
+            const settingsStore = db.createObjectStore('settings', { keyPath: 'id' });
+            
+            // Create indexes
+            papersStore.createIndex('title', 'title', { unique: false });
+            papersStore.createIndex('date', 'date', { unique: false });
+        };
+        
+        request.onsuccess = function(event) {
+            db = event.target.result;
+            loadPapersList();
+            loadSettings();
+        };
+        
+        // Global variables
+        let currentPaperId = null;
+        let isModified = false;
+        let autoSaveTimer = null;
+        let currentLanguage = 'en';
+        let currentTheme = 'light';
+        let settings = {
+            pageSize: 'a4',
+            orientation: 'portrait',
+            margins: 25,
+            lineSpacing: 1.5,
+            institutionName: '',
+            headerText: '',
+            footerText: '',
+            showPageNumbers: true,
+            passwordProtection: false,
+            password: ''
+        };
+        
+        // DOM elements
+        const editorContent = document.getElementById('editor-content');
+        const paperTitle = document.getElementById('paper-title');
+        const paperAuthor = document.getElementById('paper-author');
+        const paperDate = document.getElementById('paper-date');
+        const paperList = document.getElementById('paper-list');
+        const wordCountElement = document.getElementById('word-count');
+        const wordCountUrElement = document.getElementById('word-count-ur');
+        const autoSaveIndicator = document.querySelector('.auto-save-indicator');
+        const previewModal = document.getElementById('preview-modal');
+        const previewContainer = document.getElementById('preview-container');
+        const settingsModal = document.getElementById('settings-modal');
+        const templatesModal = document.getElementById('templates-modal');
+        const backupModal = document.getElementById('backup-modal');
+        const passwordModal = document.getElementById('password-modal');
+        
+        // Initialize the app
+        function init() {
+            setupEventListeners();
+            setupToolbar();
+            setCurrentDate();
+            setupLanguageToggle();
+            setupThemeToggle();
+            startAutoSave();
+        }
+        
+        function setCurrentDate() {
+            const today = new Date();
+            const formattedDate = today.toISOString().substr(0, 10);
+            paperDate.value = formattedDate;
+        }
+        
+        function setupEventListeners() {
+            // New paper
+            document.querySelectorAll('#new-paper').forEach(btn => {
+                btn.addEventListener('click', createNewPaper);
+            });
+            
+            // Save paper
+            document.querySelectorAll('#save-paper').forEach(btn => {
+                btn.addEventListener('click', savePaper);
+            });
+            
+            // Preview paper
+            document.querySelectorAll('#preview-paper').forEach(btn => {
+                btn.addEventListener('click', previewPaper);
+            });
+            
+            // Print paper
+            document.querySelectorAll('#print-paper').forEach(btn => {
+                btn.addEventListener('click', printPaper);
+            });
+            
+            // Export PDF
+            document.querySelectorAll('#export-pdf').forEach(btn => {
+                btn.addEventListener('click', exportPDF);
+            });
+            
+            // Settings button
+            document.querySelectorAll('#settings-btn').forEach(btn => {
+                btn.addEventListener('click', openSettings);
+            });
+            
+            // Templates button
+            document.querySelectorAll('#templates-btn').forEach(btn => {
+                btn.addEventListener('click', openTemplates);
+            });
+            
+            // Backup button
+            document.querySelectorAll('#backup-btn').forEach(btn => {
+                btn.addEventListener('click', openBackupRestore);
+            });
+            
+            // Add section button
+            document.querySelectorAll('#add-section').forEach(btn => {
+                btn.addEventListener('click', addNewSection);
+            });
+            
+            // Add image button
+            document.querySelectorAll('#add-image').forEach(btn => {
+                btn.addEventListener('click', addImage);
+            });
+            
+            // Close modal buttons
+            document.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', closeAllModals);
+            });
+            
+            // Print preview button
+            document.querySelectorAll('#print-preview').forEach(btn => {
+                btn.addEventListener('click', printPreview);
+            });
+            
+            // Close preview button
+            document.querySelectorAll('#close-preview').forEach(btn => {
+                btn.addEventListener('click', closeModal.bind(null, previewModal));
+            });
+            
+            // Save settings button
+            document.querySelectorAll('#save-settings').forEach(btn => {
+                btn.addEventListener('click', saveSettings);
+            });
+            
+            // Close settings button
+            document.querySelectorAll('#close-settings').forEach(btn => {
+                btn.addEventListener('click', closeModal.bind(null, settingsModal));
+            });
+            
+            // Create backup button
+            document.getElementById('create-backup').addEventListener('click', createBackup);
+            
+            // Restore backup button
+            document.getElementById('restore-backup').addEventListener('click', restoreBackup);
+            
+            // Submit password button
+            document.getElementById('submit-password').addEventListener('click', submitPassword);
+            
+            // Cancel password button
+            document.getElementById('cancel-password').addEventListener('click', closeModal.bind(null, passwordModal));
+            
+            // Enable password toggle
+            document.getElementById('enable-password').addEventListener('change', togglePasswordFields);
+            
+            // Template selection
+            document.querySelectorAll('.template-preview').forEach(template => {
+                template.addEventListener('click', () => {
+                    applyTemplate(template.dataset.template);
+                    closeModal(templatesModal);
+                });
+            });
+            
+            // Search box
+            document.querySelectorAll('.search-box').forEach(searchBox => {
+                searchBox.addEventListener('input', searchPapers);
+            });
+            
+            // Metadata inputs
+            paperTitle.addEventListener('input', markAsModified);
+            paperAuthor.addEventListener('input', markAsModified);
+            paperDate.addEventListener('change', markAsModified);
+            
+            // Image dropzone
+            const dropzone = document.getElementById('image-dropzone');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, unhighlight, false);
+            });
+            
+            dropzone.addEventListener('drop', handleDrop, false);
+            
+            // Editor content changes
+            editorContent.addEventListener('input', () => {
+                markAsModified();
+                updateWordCount();
+            });
+        }
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        function highlight() {
+            document.getElementById('image-dropzone').classList.add('active');
+        }
+        
+        function unhighlight() {
+            document.getElementById('image-dropzone').classList.remove('active');
+        }
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length) {
+                handleFiles(files);
+            }
+        }
+        
+        function handleFiles(files) {
+            [...files].forEach(uploadAndInsertImage);
+        }
+        
+        function uploadAndInsertImage(file) {
+            if (!file.type.match('image.*')) {
+                alert('Only image files are supported');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                img.style.cursor = 'move';
+                img.draggable = true;
+                
+                // Find the active section
+                const activeSection = document.querySelector('.section-body:focus') || 
+                                     document.querySelector('.section-body');
+                
+                if (activeSection) {
+                    activeSection.appendChild(img);
+                    markAsModified();
+                }
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        function setupToolbar() {
+            document.getElementById('bold-btn').addEventListener('click', () => {
+                document.execCommand('bold', false, null);
+                focusEditor();
+            });
+            
+            document.getElementById('italic-btn').addEventListener('click', () => {
+                document.execCommand('italic', false, null);
+                focusEditor();
+            });
+            
+            document.getElementById('underline-btn').addEventListener('click', () => {
+                document.execCommand('underline', false, null);
+                focusEditor();
+            });
+            
+            document.getElementById('align-left-btn').addEventListener('click', () => {
+                document.execCommand('justifyLeft', false, null);
+                focusEditor();
+            });
+            
+            document.getElementById('align-center-btn').addEventListener('click', () => {
+                document.execCommand('justifyCenter', false, null);
+                focusEditor();
+            });
+            
+            document.getElementById('align-right-btn').addEventListener('click', () => {
+                document.execCommand('justifyRight', false, null);
+                focusEditor();
+            });
+            
+            document.getElementById('list-ul-btn').addEventListener('click', () => {
+                document.execCommand('insertUnorderedList', false, null);
+                focusEditor();
+            });
+            
+            document.getElementById('list-ol-btn').addEventListener('click', () => {
+                document.execCommand('insertOrderedList', false, null);
+                focusEditor();
+            });
+            
+            document.getElementById('font-family').addEventListener('change', (e) => {
+                document.execCommand('fontName', false, e.target.value);
+                focusEditor();
+            });
+            
+            document.getElementById('font-size').addEventListener('change', (e) => {
+                document.execCommand('fontSize', false, getSizeValue(e.target.value));
+                focusEditor();
+            });
+            
+            document.getElementById('heading-level').addEventListener('change', (e) => {
+                const level = e.target.value;
+                const selection = window.getSelection();
+                
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const parentEl = range.commonAncestorContainer.parentNode;
+                    
+                    if (parentEl) {
+                        const newEl = document.createElement(level);
+                        newEl.innerHTML = parentEl.innerHTML;
+                        parentEl.parentNode.replaceChild(newEl, parentEl);
+                    }
+                }
+                
+                focusEditor();
+            });
+            
+            document.getElementById('font-color').addEventListener('change', (e) => {
+                document.execCommand('foreColor', false, e.target.value);
+                focusEditor();
+            });
+        }
+        
+        function getSizeValue(pt) {
+            // Convert pt to fontSize value (1-7)
+            const sizes = { '10pt': 1, '12pt': 2, '14pt': 3, '16pt': 4, '18pt': 5, '24pt': 6, '36pt': 7 };
+            return sizes[pt] || 3;
+        }
+        
+        function focusEditor() {
+            const activeSection = document.querySelector('.section-body:focus') || 
+                                 document.querySelector('.section-body');
+            
+            if (activeSection) {
+                activeSection.focus();
+            }
+        }
+        
+        function setupLanguageToggle() {
+            const enToggle = document.querySelector('.lang-toggle-en');
+            const urToggle = document.querySelector('.lang-toggle-ur');
+            
+            enToggle.addEventListener('click', () => {
+                setLanguage('en');
+            });
+            
+            urToggle.addEventListener('click', () => {
+                setLanguage('ur');
+            });
+            
+            // Hide all non-current language elements initially
+            setLanguage(currentLanguage);
+        }
+        
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            document.querySelectorAll('.lang-en, .lang-ur').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            document.querySelectorAll(`.lang-${lang}`).forEach(el => {
+                el.style.display = 'block';
+            });
+            
+            document.querySelector('.lang-toggle-en').classList.toggle('active', lang === 'en');
+            document.querySelector('.lang-toggle-ur').classList.toggle('active', lang === 'ur');
+            
+            if (lang === 'ur') {
+                document.body.classList.add('urdu');
+            } else {
+                document.body.classList.remove('urdu');
+            }
+            
+            updateWordCount();
+        }
+        
+        function setupThemeToggle() {
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            themeToggle.addEventListener('click', () => {
+                if (currentTheme === 'light') {
+                    setTheme('dark');
+                } else {
+                    setTheme('light');
+                }
+            });
+        }
+        
+        function setTheme(theme) {
+            currentTheme = theme;
+            
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.querySelector('.theme-toggle').classList.add('dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                document.querySelector('.theme-toggle').classList.remove('dark');
+            }
+        }
+        
+        function createNewPaper() {
+            if (isModified) {
+                if (confirm('You have unsaved changes. Do you want to save before creating a new paper?')) {
+                    savePaper(() => {
+                        resetEditor();
+                    });
+                    return;
+                }
+            }
+            
+            resetEditor();
+        }
+        
+        function resetEditor() {
+            currentPaperId = null;
+            paperTitle.value = '';
+            paperAuthor.value = '';
+            setCurrentDate();
+            editorContent.innerHTML = '';
+            addDefaultSections();
+            isModified = false;
+            updateWordCount();
+        }
+        
+        function addDefaultSections() {
+            addSection('Introduction');
+            addSection('Body');
+            addSection('Conclusion');
+        }
+        
+        function addNewSection() {
+            let sectionName = '';
+            
+            if (currentLanguage === 'en') {
+                sectionName = prompt('Enter section name:', 'New Section');
+            } else {
+                sectionName = prompt('سیکشن کا نام درج کریں:', 'نیا سیکشن');
+            }
+            
+            if (sectionName) {
+                addSection(sectionName);
+            }
+        }
+        
+        function addSection(title) {
+            const section = document.createElement('div');
+            section.className = 'editor-section';
+            
+            section.innerHTML = `
+                <div class="section-header">
+                    <div class="section-title">${title}</div>
+                    <div class="section-actions">
+                        <button class="section-move-up">↑</button>
+                        <button class="section-move-down">↓</button>
+                        <button class="section-remove">×</button>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="editable" contenteditable="true" data-placeholder="Type your content here..."></div>
+                </div>
+            `;
+            
+            editorContent.appendChild(section);
+            
+            // Add event listeners for section controls
+            section.querySelector('.section-remove').addEventListener('click', () => {
+                if (confirm('Are you sure you want to remove this section?')) {
+                    section.remove();
+                    markAsModified();
+                }
+            });
+            
+            section.querySelector('.section-move-up').addEventListener('click', () => {
+                const prev = section.previousElementSibling;
+                if (prev) {
+                    editorContent.insertBefore(section, prev);
+                    markAsModified();
+                }
+            });
+            
+            section.querySelector('.section-move-down').addEventListener('click', () => {
+                const next = section.nextElementSibling;
+                if (next) {
+                    editorContent.insertBefore(next, section);
+                    markAsModified();
+                }
+            });
+            
+            // Add event listener for editable content
+            const editable = section.querySelector('.editable');
+            editable.addEventListener('input', () => {
+                markAsModified();
+                updateWordCount();
+            });
+            
+            // Focus the new section
+            editable.focus();
+        }
+        
+        function addImage() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            
+            input.onchange = function(e) {
+                if (e.target.files.length > 0) {
+                    handleFiles(e.target.files);
+                }
+            };
+            
+            input.click();
+        }
+        
+        function markAsModified() {
+            isModified = true;
+            autoSaveIndicator.classList.add('saving');
+            
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
+            }
+            
+            autoSaveTimer = setTimeout(() => {
+                saveCurrentPaper();
+                autoSaveIndicator.classList.remove('saving');
+            }, 2000);
+        }
+        
+        function startAutoSave() {
+            setInterval(() => {
+                if (isModified) {
+                    saveCurrentPaper();
+                    autoSaveIndicator.classList.remove('saving');
+                    isModified = false;
+                }
+            }, 30000);
+        }
+        
+        function savePaper(callback) {
+            saveCurrentPaper(callback);
+        }
+        
+        function saveCurrentPaper(callback) {
+            if (!paperTitle.value.trim()) {
+                alert('Please enter a title for your paper');
+                paperTitle.focus();
+                return;
+            }
+            
+            const paperData = {
+                title: paperTitle.value,
+                author: paperAuthor.value,
+                date: paperDate.value,
+                content: editorContent.innerHTML,
+                language: currentLanguage,
+                lastModified: new Date().toISOString(),
+                passwordProtected: settings.passwordProtection,
+                password: settings.password
+            };
+            
+            const transaction = db.transaction(['papers'], 'readwrite');
+            const store = transaction.objectStore('papers');
+            
+            let request;
+            
+            if (currentPaperId) {
+                paperData.id = currentPaperId;
+                request = store.put(paperData);
+            } else {
+                request = store.add(paperData);
+            }
+            
+            request.onsuccess = function(event) {
+                if (!currentPaperId) {
+                    currentPaperId = event.target.result;
+                }
+                
+                isModified = false;
+                loadPapersList();
+                
+                if (callback) {
+                    callback();
+                }
+            };
+            
+            request.onerror = function(event) {
+                console.error('Error saving paper:', event.target.error);
+                alert('Error saving paper. Please try again.');
+            };
+        }
+        
+        function loadPapersList() {
+            const transaction = db.transaction(['papers'], 'readonly');
+            const store = transaction.objectStore('papers');
+            const index = store.index('title');
+            const request = index.openCursor();
+            
+            paperList.innerHTML = '';
+            
+            request.onsuccess = function(event) {
+                const cursor = event.target.result;
+                
+                if (cursor) {
+                    const paper = cursor.value;
+                    const listItem = document.createElement('li');
+                    listItem.className = 'paper-item';
+                    listItem.dataset.id = paper.id;
+                    
+                    if (currentPaperId && paper.id === currentPaperId) {
+                        listItem.classList.add('active');
+                    }
+                    
+                    listItem.innerHTML = `
+                        <div>${paper.title}</div>
+                        <div style="font-size: 0.8rem; color: #666;">${new Date(paper.lastModified).toLocaleString()}</div>
+                    `;
+                    
+                    listItem.addEventListener('click', () => {
+                        loadPaper(paper.id);
+                    });
+                    
+                    // Add context menu
+                    listItem.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        showPaperContextMenu(paper.id, e.clientX, e.clientY);
+                    });
+                    
+                    paperList.appendChild(listItem);
+                    cursor.continue();
+                }
+            };
+        }
+        
+        function showPaperContextMenu(paperId, x, y) {
+            // Remove any existing context menu
+            const existingMenu = document.querySelector('.context-menu');
+            if (existingMenu) {
+                existingMenu.remove();
+            }
+            
+            // Create context menu
+            const menu = document.createElement('div');
+            menu.className = 'context-menu';
+            menu.style.position = 'fixed';
+            menu.style.left = `${x}px`;
+            menu.style.top = `${y}px`;
+            menu.style.background = 'white';
+            menu.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
+            menu.style.borderRadius = '4px';
+            menu.style.padding = '0.5rem 0';
+            menu.style.zIndex = '1000';
+            
+            // Add menu items
+            const deleteItem = document.createElement('div');
+            deleteItem.style.padding = '0.5rem 1rem';
+            deleteItem.style.cursor = 'pointer';
+            deleteItem.style.transition = 'background 0.2s';
+            
+            if (currentLanguage === 'en') {
+                deleteItem.textContent = 'Delete';
+            } else {
+                deleteItem.textContent = 'حذف کریں';
+            }
+            
+            deleteItem.addEventListener('mouseover', () => {
+                deleteItem.style.background = '#f0f0f0';
+            });
+            
+            deleteItem.addEventListener('mouseout', () => {
+                deleteItem.style.background = 'transparent';
+            });
+            
+            deleteItem.addEventListener('click', () => {
+                deletePaper(paperId);
+                menu.remove();
+            });
+            
+            menu.appendChild(deleteItem);
+            document.body.appendChild(menu);
+            
+            // Close menu when clicking outside
+            const closeMenu = (e) => {
+                if (!menu.contains(e.target)) {
+                    menu.remove();
+                    document.removeEventListener('click', closeMenu);
+                }
+            };
+            
+            // Add small delay to prevent immediate closing
+            setTimeout(() => {
+                document.addEventListener('click', closeMenu);
+            }, 100);
+        }
+        
+        function deletePaper(paperId) {
+            if (!confirm('Are you sure you want to delete this paper?')) {
+                return;
+            }
+            
+            const transaction = db.transaction(['papers'], 'readwrite');
+            const store = transaction.objectStore('papers');
+            const request = store.delete(paperId);
+            
+            request.onsuccess = function() {
+                loadPapersList();
+                
+                if (currentPaperId === paperId) {
+                    resetEditor();
+                }
+            };
+            
+            request.onerror = function(event) {
+                console.error('Error deleting paper:', event.target.error);
+                alert('Error deleting paper. Please try again.');
+            };
+        }
+        
+        function loadPaper(paperId) {
+            if (isModified) {
+                if (!confirm('You have unsaved changes. Do you want to discard them and load another paper?')) {
+                    return;
+                }
+            }
+            
+            const transaction = db.transaction(['papers'], 'readonly');
+            const store = transaction.objectStore('papers');
+            const request = store.get(parseInt(paperId));
+            
+            request.onsuccess = function(event) {
+                const paper = event.target.result;
+                
+                if (paper) {
+                    if (paper.passwordProtected && paper.password) {
+                        showPasswordPrompt(paper);
+                        return;
+                    }
+                    
+                    displayPaper(paper);
+                }
+            };
+            
+            request.onerror = function(event) {
+                console.error('Error loading paper:', event.target.error);
+                alert('Error loading paper. Please try again.');
+            };
+        }
+        
+        function showPasswordPrompt(paper) {
+            document.getElementById('enter-password').value = '';
+            
+            const submitHandler = function() {
+                const enteredPassword = document.getElementById('enter-password').value;
+                
+                if (enteredPassword === paper.password) {
+                    closeModal(passwordModal);
+                    displayPaper(paper);
+                } else {
+                    alert('Incorrect password. Please try again.');
+                }
+            };
+            
+            document.getElementById('submit-password').onclick = submitHandler;
+            document.getElementById('enter-password').onkeydown = function(e) {
+                if (e.key === 'Enter') {
+                    submitHandler();
+                }
+            };
+            
+            openModal(passwordModal);
+        }
+        
+        function displayPaper(paper) {
+            currentPaperId = paper.id;
+            paperTitle.value = paper.title;
+            paperAuthor.value = paper.author || '';
+            paperDate.value = paper.date || '';
+            editorContent.innerHTML = paper.content || '';
+            
+            if (paper.language) {
+                setLanguage(paper.language);
+            
+        } else {
+            setLanguage(currentLanguage);
+        }
+        
+        updateWordCount();
+        isModified = false;
+        loadPapersList();
+        setupSections();
+    }
+    
+    function setupSections() {
+        const sections = editorContent.querySelectorAll('.editable');
+        
+        Array.from(sections).forEach(section => {
+            section.addEventListener('input', () => {
+                markAsModified();
+                updateWordCount();
+            });
+        });
+    }
+    
+    function updateWordCount() {
+        const content = editorContent.innerText;
+        const wordCount = content.trim() ? content.match(/\S+/g).length : 0;
+        const charCount = content.length;
+        
+        wordCountElement.textContent = wordCount;
+        wordCountUrElement.textContent = wordCount;
+        
+        const statsElement = document.querySelector('.word-count');
+        if (currentLanguage === 'ur') {
+            statsElement.textContent = `الفاظ: ${wordCount}, حروف: ${charCount}`;
+        } else {
+            statsElement.textContent = `Words: ${wordCount}, Characters: ${charCount}`;
+        }
+    }
+    
+    // Event listeners for existing sections
+    Array.from(editorContent.querySelectorAll('.editor-section')).forEach(section => {
+        section.querySelector('.section-remove').addEventListener('click', () => {
+            section.remove();
+            markAsModified();
+        });
+        
+        section.querySelector('.section-move-up').addEventListener('click', moveSectionUp);
+        
+        section.querySelector('.section-move-down').addEventListener('click', moveSectionDown);
+    });
+    
+    function moveSectionUp(e) {
+        const section = e.target.closest('.editor-section');
+        const prev = section.previousElementSibling;
+        
+        if (prev) {
+            editorContent.insertBefore(section, prev);
+        }
+    }
+    
+    function moveSectionDown(e) {
+        const section = e.target.closest('.editor-section');
+        const next = section.nextElementSibling;
+        
+        if (next) {
+            editorContent.insertBefore(next, section);
+        }
+    }
+    
+    function openSettings() {
+        loadSettingsIntoInputs();
+        openModal(settingsModal);
+    }
+    
+    function loadSettingsIntoInputs() {
+        document.getElementById('page-size').value = settings.pageSize;
+        document.getElementById('orientation').value = settings.orientation;
+        document.getElementById('margin').value = settings.margins;
+        document.getElementById('line-spacing').value = settings.lineSpacing;
+        document.getElementById('institution-name').value = settings.institutionName;
+        document.getElementById('header-text').value = settings.headerText;
+        document.getElementById('footer-text').value = settings.footerText;
+        document.getElementById('show-page-numbers').value = settings.showPageNumbers ? 'true' : 'false';
+        document.getElementById('enable-password').value = settings.passwordProtection ? 'true' : 'false';
+        togglePasswordFields();
+        
+        if (settings.password) {
+            document.getElementById('password').value = settings.password;
+            document.getElementById('confirm-password').value = settings.password;
+        }
+    }
+    
+    function togglePasswordFields() {
+        const passwordFields = document.getElementById('password-fields');
+        const enablePassword = document.getElementById('enable-password').value === 'true';
+        
+        if (enablePassword) {
+            passwordFields.style.display = 'block';
+        } else {
+            passwordFields.style.display = 'none';
+        }
+    }
+    
+    function saveSettings() {
+        settings.pageSize = document.getElementById('page-size').value;
+        settings.orientation = document.getElementById('orientation').value;
+        settings.margins = parseInt(document.getElementById('margin').value);
+        settings.lineSpacing = parseFloat(document.getElementById('line-spacing').value);
+        settings.institutionName = document.getElementById('institution-name').value;
+        settings.headerText = document.getElementById('header-text').value;
+        settings.footerText = document.getElementById('footer-text').value;
+        settings.showPageNumbers = document.getElementById('show-page-numbers').value === 'true';
+        settings.passwordProtection = document.getElementById('enable-password').value === 'true';
+        
+        if (settings.passwordProtection) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match. Please try again.');
+                return;
+            }
+            
+            settings.password = password;
+        } else {
+            settings.password = '';
+        }
+        
+        saveSettingsToDB();
+        closeModal(settingsModal);
+    }
+    
+    function saveSettingsToDB() {
+        const transaction = db.transaction(['settings'], 'readwrite');
+        const store = transaction.objectStore('settings');
+        const request = store.put({ id: 'default', ...settings });
+        
+        request.onsuccess = function() {
+            console.log('Settings saved successfully');
+        };
+        
+        request.onerror = function(event) {
+            console.error('Error saving settings:', event.target.error);
+        };
+    }
+    
+    function loadSettings() {
+        const transaction = db.transaction(['settings'], 'readonly');
+        const store = transaction.objectStore('settings');
+        const request = store.get('default');
+        
+        request.onsuccess = function(event) {
+            if (event.target.result) {
+                settings = { ...event.target.result };
+                applySettings();
+            }
+        };
+        
+        request.onerror = function(event) {
+            console.error('Error loading settings:', event.target.error);
+        };
+    }
+    
+    function applySettings() {
+        document.documentElement.style.setProperty('--margins', settings.margins + 'px');
+        document.documentElement.style.setProperty('--line-spacing', settings.lineSpacing);
+        
+        // Optionally apply other settings to the DOM as needed
+    }
+    
+    function openTemplates() {
+        openModal(templatesModal);
+    }
+    
+    function applyTemplate(templateName) {
+        const template = {
+            essay: `
+                <div class="editor-section">
+                    <div class="section-header">
+                        <div class="section-title">Introduction</div>
+                        <div class="section-actions">
+                            <button class="section-move-up">↑</button>
+                            <button class="section-move-down">↓</button>
+                            <button class="section-remove">×</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div contenteditable="true" data-placeholder="Type your introduction here..."></div>
+                    </div>
+                </div>
+                <div class="editor-section">
+                    <div class="section-header">
+                        <div class="section-title">Body</div>
+                        <div class="section-actions">
+                            <button class="section-move-up">↑</button>
+                            <button class="section-move-down">↓</button>
+                            <button class="section-remove">×</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div contenteditable="true" data-placeholder="Type your body paragraphs here..."></div>
+                    </div>
+                </div>
+                <div class="editor-section">
+                    <div class="section-header">
+                        <div class="section-title">Conclusion</div>
+                        <div class="section-actions">
+                            <button class="section-move-up">↑</button>
+                            <button class="section-move-down">↓</button>
+                            <button class="section-remove">×</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div contenteditable="true" data-placeholder="Type your conclusion here..."></div>
+                    </div>
+                </div>
+            `,
+            assignment: `
+                <h1>Assignment</h1>
+                <div class="editor-section">
+                    <div class="section-header">
+                        <div class="section-title">Title</div>
+                        <div class="section-actions">
+                            <button class="section-move-up">↑</button>
+                            <button class="section-move-down">↓</button>
+                            <button class="section-remove">×</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div contenteditable="true" data-placeholder="Type your assignment title here..."></div>
+                    </div>
+                </div>
+                <div class="editor-section">
+                    <div class="section-header">
+                        <div class="section-title">Introduction</div>
+                        <div class="section-actions">
+                            <button class="section-move-up">↑</button>
+                            <button class="section-move-down">↓</button>
+                            <button class="section-remove">×</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div contenteditable="true" data-placeholder="Type your introduction here..."></div>
+                    </div>
+                </div>
+                <div class="editor-section">
+                    <div class="section-header">
+                        <div class="section-title">Main Content</div>
+                        <div class="section-actions">
+                            <button class="section-move-up">↑</button>
+                            <button class="section-move-down">↓</button>
+                            <button class="section-remove">×</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div contenteditable="true" data-placeholder="Type your main content here..."></div>
+                    </div>
+                </div>
+                <div class="editor-section">
+                    <div class="section-header">
+                        <div class="section-title">Conclusion</div>
+                        <div class="section-actions">
+                            <button class="section-move-up">↑</button>
+                            <button class="section-move-down">↓</button>
+                            <button class="section-remove">×</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div contenteditable="true" data-placeholder="Type your conclusion here..."></div>
+                    </div>
+                </div>
+                <div class="editor-section">
+                    <div class="section-header">
+                        <div class="section-title">References</div>
+                        <div class="section-actions">
+                            <button class="section-move-up">↑</button>
+                            <button class="section-move-down">↓</button>
+                            <button class="section-remove">×</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div contenteditable="true" data-placeholder="Add your references here..."></div>
+                    </div>
+                </div>
+            `,
+            test: `
+                <h1>Test Paper</h1>
+                <div class="editor-section">
+                    <div class="section-header">
+                        <div class="section-title">Multiple Choice</div>
+                        <div class="section-actions">
+                            <button class="section-move-up">↑</button>
+                            <button class="section-move-down">↓</button>
+                            <button class="section-remove">×</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div contenteditable="true" data-placeholder="Type your questions here..."></div>
+                    </div>
+                </div>
+                <div class="editor-section">
+                    <div class="section-header">
+                        <div class="section-title">Short Answer</div>
+                        <div class="section-actions">
+                            <button class="section-move-up">↑</button>
+                            <button class="section-move-down">↓</button>
+                            <button class="section-remove">×</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div contenteditable="true" data-placeholder="Type your questions here..."></div>
+                    </div>
+                </div>
+                <div class="editor-section">
+                    <div class="section-header">
+                        <div class="section-title">Essay</div>
+                        <div class="section-actions">
+                            <button class="section-move-up">↑</button>
+                            <button class="section-move-down">↓</button>
+                            <button class="section-remove">×</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div contenteditable="true" data-placeholder="Provide an essay topic or question here..."></div>
+                    </div>
+                </div>
+            `,
+            notes: `
+                <h1>Notes</h1>
+                <div class="editor-section">
+                    <div class="section-header">
+                        <div class="section-title">Topic</div>
+                        <div class="section-actions">
+                            <button class="section-move-up">↑</button>
+                            <button class="section-move-down">↓</button>
+                            <button class="section-remove">×</button>
+                        </div>
+                    </div>
+                    <div class="section-body">
+                        <div contenteditable="true" data-placeholder="Type your notes here..."></div>
+                    </div>
+                </div>
+            `
+        };
+        
+        // Clear existing content
+        editorContent.innerHTML = '';
+        
+        // Append the template
+        editorContent.innerHTML += template[templateName];
+        
+        setupSections();
+    }
+    
+    function openBackupRestore() {
+        openModal(backupModal);
+    }
+    
+    function createBackup() {
+        const papersTransaction = db.transaction(['papers'], 'readonly');
+        const papersStore = papersTransaction.objectStore('papers');
+        const papersRequest = papersStore.getAll();
+        
+        const settingsTransaction = db.transaction(['settings'], 'readonly');
+        const settingsStore = settingsTransaction.objectStore('settings');
+        const settingsRequest = settingsStore.get('default');
+        
+        Promise.all([new Promise((resolve) => {
+            papersRequest.onsuccess = resolve;
+        }), new Promise((resolve) => {
+            settingsRequest.onsuccess = resolve;
+        })]).then(([papersEvent, settingsEvent]) => {
+            const backupData = {
+                papers: papersEvent.target.result,
+                settings: settingsEvent.target.result
+            };
+            
+            const blob = new Blob([JSON.stringify(backupData)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `paper_maker_backup_${new Date().toISOString().substr(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }).catch((error) => {
+            console.error('Error creating backup:', error);
+            alert('Error occurred while creating the backup.');
+        });
+    }
+    
+    function restoreBackup() {
+        const fileInput = document.getElementById('restore-file');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            alert('Please select a backup file to restore.');
+            return;
+        }
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            try {
+                const backupData = JSON.parse(e.target.result);
+                
+                const papersTransaction = db.transaction(['papers'], 'readwrite');
+                const papersStore = papersTransaction.objectStore('papers');
+                
+                // Clear existing papers
+                papersStore.clear().onsuccess = function() {
+                    // Add papers from backup
+                    backupData.papers.forEach(paper => papersStore.add(paper));
+                };
+                
+                const settingsTransaction = db.transaction(['settings'], 'readwrite');
+                const settingsStore = settingsTransaction.objectStore('settings');
+                
+                // Clear existing settings
+                settingsStore.clear().onsuccess = function() {
+                    // Add settings from backup
+                    if (backupData.settings) {
+                        settingsStore.put(backupData.settings);
+                        
+                        // Update current settings
+                        settings = { ...backupData.settings };
+                        applySettings();
+                    }
+                    
+                    loadPapersList();
+                    alert('Backup restored successfully.');
+                };
+            } catch (error) {
+                console.error('Error restoring backup:', error);
+                alert('Error occurred while restoring the backup.');
+            }
+        };
+        
+        reader.readAsText(file);
+    }
+    
+    function previewPaper() {
+        const content = editorContent.innerHTML;
+        const parsedContent = parseContentFromSections(content);
+        
+        previewContainer.innerHTML = generatePreviewHTML(parsedContent);
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            .preview-container {
+                width: 100%;
+                max-width: 21cm;
+                background-color: white;
+                padding: 2cm;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                overflow-y: auto;
+                font-family: var(--font-family);
+                color: var(--text-color);
+            }
+            
+            .page {
+                margin-bottom: 1cm;
+                min-height: 25.7cm;
+                position: relative;
+                background-color: white;
+                padding: 1cm;
+                box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            }
+            
+            .page-header, .page-footer {
+                height: 1cm;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 1cm;
+                font-size: 0.8rem;
+                color: #666;
+            }
+            
+            .page-content {
+                min-height: 23.7cm;
+                padding: 1cm 0;
+            }
+            
+            .preview ${currentLanguage === 'ur' ? 'direction: rtl;' : ''}
+        `;
+        
+        previewContainer.appendChild(style);
+        
+        openModal(previewModal);
+    }
+    
+    function printPreview() {
+        const printContent = previewContainer.innerHTML;
+        const printWindow = window.open('', '_blank');
+        
+        printWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Paper Making Software - Preview</title><style>body { margin: 0; padding: 0; } .page { page-break-after: always; } .preview { font-family: var(--font-family); }</style></head><body>');
+        printWindow.document.write('<div class="preview">' + printContent + '</div>');
+        printWindow.document.write('</body></html>');
+        
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.onafterprint = function() {
+            printWindow.close();
+        };
+    }
+    
+    function parseContentFromSections(html) {
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        
+        const sections = {
+            title: temp.querySelector('.section-title') ? temp.querySelector('.section-title').textContent : '',
+            author: paperAuthor.value || '',
+            date: paperDate.value || '',
+            content: []
+        };
+        
+        Array.from(temp.querySelectorAll('.editor-section')).forEach(section => {
+            const title = section.querySelector('.section-title').textContent;
+            const body = section.querySelector('.section-body').innerHTML;
+            sections.content.push({ title, body });
+        });
+        
+        return sections;
+    }
+    
+    function generatePreviewHTML(sections) {
+        const { title, author, date, content } = sections;
+        let html = '<div class="preview-container">';
+        
+        content.forEach((section, index) => {
+            html += `
+                <div class="page">
+                    <div class="page-header">
+                        <div>${settings.institutionName}</div>
+                        <div>${settings.headerText} - Page ${index + 1}</div>
+                    </div>
+                    <div class="page-content">
+                        <h1>${title}</h1>
+                        ${index === 0 && author ? `<div class="author">By ${author}</div>` : ''}
+                        ${index === 0 && date ? `<div class="date">${date}</div>` : ''}
+                        <h2>${section.title}</h2>
+                        ${section.body}
+                    </div>
+                    <div class="page-footer">
+                        <div>${settings.footerText} - Page ${index + 1}</div>
+                        <div>${settings.showPageNumbers ? `Page ${index + 1}` : ''}</div>
+                    </div>
+                </div>`;
+        });
+        
+        html += '</div>';
+        return html;
+    }
+    
+    function openModal(modal) {
+        modal.style.display = 'flex';
+    }
+    
+    function closeModal(modal) {
+        modal.style.display = 'none';
+        Array.from(modal.querySelectorAll('input, select')).forEach(input => {
+            input.removeEventListener('click', closeAllModals);
+        });
+    }
+    
+    function closeAllModals() {
+        [previewModal, settingsModal, templatesModal, backupModal, passwordModal].forEach(closeModal);
+    }
+    
+    function searchPapers() {
+        const searchText = document.querySelector('.search-box').value.toLowerCase();
+        const paperItems = document.querySelectorAll('.paper-item');
+        
+        paperItems.forEach(item => {
+            const title = item.querySelector('div').textContent.toLowerCase();
+            if (title.includes(searchText)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+    function printPaper() {
+    const printWindow = window.open('', '_blank');
+    const printContent = editorContent.innerHTML;
+    
+    printWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Paper Making Software - Print Preview</title></head><body>');
+    printWindow.document.write(`<div style="width: 80%; margin: 0 auto; font-family: var(--font-family); color: var(--text-color);">${printContent}</div>`);
+    printWindow.document.write('</body></html>');
+    
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.onafterprint = function() {
+        printWindow.close();
+    };
+}
+
+function printPreview() {
+    const printContent = previewContainer.innerHTML;
+    const printWindow = window.open('', '_blank');
+    
+    printWindow.document.write('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Paper Making Software - Preview</title><style>body { margin: 0; padding: 0; } .page { page-break-after: always; } .preview { font-family: var(--font-family); }</style></head><body>');
+    printWindow.document.write(`<div class="preview">${printContent}</div>`);
+    printWindow.document.write('</body></html>');
+    
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.onafterprint = function() {
+        printWindow.close();
+    };
+}
+
+function submitPassword() {
+    const enteredPassword = document.getElementById('enter-password').value;
+    const transaction = db.transaction(['papers'], 'readonly');
+    const store = transaction.objectStore('papers');
+    const request = store.get(parseInt(currentPaperId));
+    
+    request.onsuccess = function(event) {
+        const paper = event.target.result;
+        if (paper && paper.password === enteredPassword) {
+            displayPaper(paper);
+            closeModal(passwordModal);
+        } else {
+            alert('Incorrect password. Please try again.');
+        }
+    };
+}
+
+function exportPDF() {
+    const pdf = new jsPDF();
+    
+    // Convert HTML to PDF
+    html2canvas(editorContent).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+
+        pdf.addImage(imgData, 'PNG', 0, 0, 210, 297); // A4 size in mm
+
+        const title = paperTitle.value || 'Document';
+        const fileName = `${title.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`;
+        pdf.save(fileName);
+    });
+}
+
+    function exportPDF() {
+        const exportContent = parseContentFromSections(editorContent.innerHTML);
+        const pdfDoc = new jsPDF();
+        
+        pdfDoc.setFont('helvetica');
+        pdfDoc.setFontSize(12);
+        
+        pdfDoc.text(exportContent.title, 10, 20);
+        
+        let yPosition = 30;
+        
+        exportContent.content.forEach(section => {
+            pdfDoc.addPage();
+            pdfDoc.setFontSize(14);
+            pdfDoc.text(section.title, 10, 20);
+            pdfDoc.setFontSize(12);
+            
+            const textLines = pdfDoc.splitTextToSize(section.body, 180);
+            const linesPerPage = 40;
+            
+            for (let i = 0; i < textLines.length; i += linesPerPage) {
+                if (i > 0) {
+                    pdfDoc.addPage();
+                }
+                pdfDoc.text(textLines.slice(i, i + linesPerPage), 15, yPosition);
+            }
+        });
+        
+        pdfDoc.save(`${exportContent.title.replace(/\s/g, '_')}.pdf`);
+    }
+    
+    init();
+	
+	
+
+</script>
+</body>
+</html>
+

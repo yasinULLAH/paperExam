@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Yasin Ullah, Pakistan">
+    <meta name="description" content="Offline-first exam paper generator with rich text editor and PDF/Image export.">
+    <meta name="keywords" content="exam paper generator, offline, IndexedDB, rich text, KaTeX, HTML to PDF, HTML to Image, vanilla JS, Pakistan">
+    <title>Exam Paper Generator</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" integrity="sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js" integrity="sha384-cMkvdD8LoxVzGF/RPUKAcvmm49FQ0oxwDF3BGKtDXcEc+T1b2N+teh/OJfpU0jr6" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js" integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJMnLotFK3NM8uHXYGzzsFg ThackerCzkNWXu6T7b4P/TTbtJgVCFMbTTJ4JttbLCH8XnhoEDsSaDfXhXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --accent-color: #FFC107;
+            --background-color: #f4f7f6;
+            --text-color: #333;
+            --border-color: #ddd;
+            --header-bg: #fff;
+            --card-bg: #fff;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.8em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        aside {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow-y: auto;
+            max-height: calc(100vh - 150px);
+        }
+
+        .question-bank, .paper-creation {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        h2 {
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        select,
+        textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1em;
+            margin-top: 5px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button.secondary {
+            background-color: var(--secondary-color);
+        }
+
+        button.secondary:hover {
+            background-color: #1a7bb9;
+        }
+
+        button.danger {
+            background-color: #f44336;
+        }
+
+        button.danger:hover {
+            background-color: #d32f2f;
+        }
+
+        .question-list, .paper-questions {
+            list-style: none;
+            padding: 0;
+        }
+
+        .question-item, .paper-question-item {
+            background-color: var(--background-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .question-item span, .paper-question-item span {
+            flex-grow: 1;
+        }
+
+        .question-item .actions button, .paper-question-item .actions button {
+            margin-left: 8px;
+            padding: 5px 10px;
+            font-size: 0.85em;
+        }
+
+        .rich-text-editor {
+            border: 1px solid var(--border-color);
+            min-height: 100px;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 5px;
+            background-color: white;
+            overflow-y: auto;
+            max-height: 200px;
+        }
+
+        .editor-controls {
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .editor-controls button {
+            padding: 5px 10px;
+            font-size: 0.9em;
+            background-color: #607D8B;
+            color: white;
+        }
+
+        .editor-controls button:hover {
+            background-color: #455A64;
+        }
+
+        .preview-section {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow-y: auto;
+            max-height: calc(100vh - 150px);
+        }
+
+        .paper-header {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .paper-header p {
+            margin: 5px 0;
+        }
+
+        .live-preview-content {
+            border: 1px dashed var(--border-color);
+            padding: 20px;
+            min-height: 300px;
+            background-color: #fdfdfd;
+        }
+
+        .live-preview-content h3 {
+            color: var(--primary-color);
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+
+        .live-preview-content ol {
+            padding-left: 20px;
+        }
+
+        .live-preview-content li {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dotted var(--border-color);
+        }
+
+        .live-preview-content li:last-child {
+            border-bottom: none;
+        }
+
+        .controls-bottom {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        /* RTL styling for rich text editor */
+        [data-text-direction="rtl"] {
+            direction: rtl;
+            text-align: right;
+        }
+
+        /* Utility classes for spacing */
+        .mb-10 { margin-bottom: 10px; }
+        .mt-20 { margin-top: 20px; }
+        .flex-end { display: flex; justify-content: flex-end; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+        .file-upload-section {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            background-color: var(--background-color);
+            text-align: center;
+        }
+
+        .file-upload-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .file-upload-section input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-section .custom-file-upload {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+
+        .file-upload-section .custom-file-upload:hover {
+            background-color: #FFD54F;
+        }
+
+        .sample-data-section {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            background-color: var(--background-color);
+            text-align: center;
+        }
+
+        .sample-data-section button {
+            background-color: #9C27B0;
+        }
+
+        .sample-data-section button:hover {
+            background-color: #7B1FA2;
+        }
+
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            aside, .preview-section {
+                max-height: unset;
+                overflow-y: unset;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Exam Paper Generator</h1>
+            <div class="header-actions">
+                <button class="secondary" onclick="exportData()">Backup Data</button>
+                <input type="file" id="importDataInput" accept="application/json" style="display: none;" onchange="importData(event)">
+                <button class="secondary" onclick="document.getElementById('importDataInput').click()">Restore Data</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <aside>
+                <div class="question-bank">
+                    <h2>Question Bank</h2>
+                    <div class="form-group">
+                        <label for="questionText">Question Text</label>
+                        <div class="editor-controls">
+                            <button onclick="formatText('bold')">B</button>
+                            <button onclick="formatText('italic')">I</button>
+                            <button onclick="formatText('underline')">U</button>
+                            <button onclick="toggleRTL()">RTL</button>
+                            <button onclick="insertMath()">Math (\(ax^2+bx+c=0\))</button>
+                        </div>
+                        <div id="questionText" class="rich-text-editor" contenteditable="true" data-text-direction="ltr"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="questionType">Type</label>
+                        <select id="questionType">
+                            <option value="MCQ">MCQ</option>
+                            <option value="Short Answer">Short Answer</option>
+                            <option value="Long Answer">Long Answer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="questionSubject">Subject</label>
+                        <input type="text" id="questionSubject" placeholder="e.g., Physics">
+                    </div>
+                    <div class="form-group">
+                        <label for="questionMarks">Marks</label>
+                        <input type="number" id="questionMarks" value="5" min="1">
+                    </div>
+                    <button id="addUpdateQuestionBtn" onclick="addUpdateQuestion()">Add Question</button>
+                    <button id="clearFormBtn" onclick="clearQuestionForm()" class="secondary">Clear Form</button>
+
+                    <h3 class="mt-20">Existing Questions</h3>
+                    <ul id="questionList" class="question-list">
+                        <!-- Questions will be loaded here -->
+                    </ul>
+                    <div class="sample-data-section">
+                        <button onclick="loadSampleData()">Load Sample Questions</button>
+                    </div>
+                </div>
+            </aside>
+
+            <section>
+                <div class="paper-creation mb-20">
+                    <h2>Create New Paper</h2>
+                    <div class="form-group">
+                        <label for="schoolName">School Name</label>
+                        <input type="text" id="schoolName" value="Government High School, Lahore">
+                    </div>
+                    <div class="form-group">
+                        <label for="examTitle">Exam Title</label>
+                        <input type="text" id="examTitle" value="Mid-Term Examination 2025">
+                    </div>
+                    <div class="form-group">
+                        <label for="paperSubject">Subject</label>
+                        <input type="text" id="paperSubject" value="Mathematics">
+                    </div>
+                    <div class="form-group">
+                        <label for="totalMarks">Total Marks</label>
+                        <input type="number" id="totalMarks" value="100" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="examDuration">Duration (minutes)</label>
+                        <input type="number" id="examDuration" value="180" min="1">
+                    </div>
+
+                    <h3 class="mt-20">Questions for Paper</h3>
+                    <ul id="paperQuestionsList" class="paper-questions">
+                        <!-- Selected questions will be added here -->
+                    </ul>
+                    <button onclick="generatePaperPreview()">Generate Paper</button>
+                    <button class="danger" onclick="clearPaperQuestions()">Clear Paper</button>
+                </div>
+
+                <div class="preview-section">
+                    <h2>Live Preview</h2>
+                    <div id="livePaperPreview" class="live-preview-content">
+                        <!-- Paper preview will be rendered here -->
+                    </div>
+                    <div class="controls-bottom flex-end">
+                        <button class="secondary" onclick="exportPaper('pdf')">Export as PDF</button>
+                        <button class="secondary" onclick="exportPaper('image')">Export as Image</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const DB_NAME = 'ExamPaperDB';
+        const DB_VERSION = 1;
+        const OBJECT_STORE_NAME = 'questions';
+
+        let db;
+        let currentQuestionId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initDB();
+            loadQuestions();
+        });
+
+        function initDB() {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+            request.onupgradeneeded = function(event) {
+                db = event.target.result;
+                if (!db.objectStoreNames.contains(OBJECT_STORE_NAME)) {
+                    db.createObjectStore(OBJECT_STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                }
+            };
+
+            request.onsuccess = function(event) {
+                db = event.target.result;
+                console.log('IndexedDB opened successfully');
+                loadQuestions();
+            };
+
+            request.onerror = function(event) {
+                console.error('IndexedDB error:', event.target.errorCode);
+                alert('IndexedDB error: ' + event.target.errorCode);
+            };
+        }
+
+        async function addUpdateQuestion() {
+            const questionText = document.getElementById('questionText').innerHTML;
+            const questionType = document.getElementById('questionType').value;
+            const questionSubject = document.getElementById('questionSubject').value.trim();
+            const questionMarks = parseInt(document.getElementById('questionMarks').value);
+            const textDirection = document.getElementById('questionText').dataset.textDirection;
+
+            if (!questionText || !questionSubject || isNaN(questionMarks)) {
+                alert('Please fill in all question fields correctly.');
+                return;
+            }
+
+            const question = {
+                text: questionText,
+                type: questionType,
+                subject: questionSubject,
+                marks: questionMarks,
+                direction: textDirection
+            };
+
+            const transaction = db.transaction([OBJECT_STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(OBJECT_STORE_NAME);
+
+            try {
+                if (currentQuestionId) {
+                    question.id = currentQuestionId;
+                    await store.put(question);
+                    alert('Question updated successfully!');
+                } else {
+                    await store.add(question);
+                    alert('Question added successfully!');
+                }
+                clearQuestionForm();
+                loadQuestions();
+            } catch (error) {
+                console.error('Error adding/updating question:', error);
+                alert('Error saving question: ' + error.message);
+            }
+        }
+
+        async function loadQuestions() {
+            const questionList = document.getElementById('questionList');
+            questionList.innerHTML = '';
+
+            const transaction = db.transaction([OBJECT_STORE_NAME], 'readonly');
+            const store = transaction.objectStore(OBJECT_STORE_NAME);
+            const allQuestions = await store.getAll();
+
+            allQuestions.forEach(q => {
+                const li = document.createElement('li');
+                li.className = 'question-item';
+                li.innerHTML = `
+                    <span data-id="${q.id}">
+                        <strong>${q.subject} (${q.type}, ${q.marks} Marks):</strong>
+                        <div style="display:inline-block;" data-text-direction="${q.direction || 'ltr'}">${q.text.length > 100 ? q.text.substring(0, 100) + '...' : q.text}</div>
+                    </span>
+                    <div class="actions">
+                        <button onclick="editQuestion(${q.id})">Edit</button>
+                        <button onclick="deleteQuestion(${q.id})" class="danger">Delete</button>
+                        <button onclick="addQuestionToPaper(${q.id})" class="secondary">Add to Paper</button>
+                    </div>
+                `;
+                questionList.appendChild(li);
+                renderMathInElement(li); // Render math for loaded question
+            });
+        }
+
+        async function editQuestion(id) {
+            const transaction = db.transaction([OBJECT_STORE_NAME], 'readonly');
+            const store = transaction.objectStore(OBJECT_STORE_NAME);
+            const question = await store.get(id);
+
+            if (question) {
+                document.getElementById('questionText').innerHTML = question.text;
+                document.getElementById('questionType').value = question.type;
+                document.getElementById('questionSubject').value = question.subject;
+                document.getElementById('questionMarks').value = question.marks;
+                document.getElementById('questionText').dataset.textDirection = question.direction || 'ltr';
+                currentQuestionId = id;
+                document.getElementById('addUpdateQuestionBtn').textContent = 'Update Question';
+            }
+        }
+
+        async function deleteQuestion(id) {
+            if (!confirm('Are you sure you want to delete this question?')) {
+                return;
+            }
+            const transaction = db.transaction([OBJECT_STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(OBJECT_STORE_NAME);
+            await store.delete(id);
+            alert('Question deleted successfully!');
+            loadQuestions();
+            // Also remove from paper if it exists there
+            const paperList = document.getElementById('paperQuestionsList');
+            Array.from(paperList.children).forEach(item => {
+                if (item.dataset.questionId == id) {
+                    item.remove();
+                }
+            });
+            generatePaperPreview(); // Regenerate preview
+        }
+
+        function clearQuestionForm() {
+            document.getElementById('questionText').innerHTML = '';
+            document.getElementById('questionType').value = 'MCQ';
+            document.getElementById('questionSubject').value = '';
+            document.getElementById('questionMarks').value = '5';
+            document.getElementById('questionText').dataset.textDirection = 'ltr';
+            currentQuestionId = null;
+            document.getElementById('addUpdateQuestionBtn').textContent = 'Add Question';
+        }
+
+        function formatText(command) {
+            document.execCommand(command, false, null);
+        }
+
+        function toggleRTL() {
+            const editor = document.getElementById('questionText');
+            if (editor.dataset.textDirection === 'rtl') {
+                editor.dataset.textDirection = 'ltr';
+            } else {
+                editor.dataset.textDirection = 'rtl';
+            }
+            editor.focus();
+        }
+
+        function insertMath() {
+            const editor = document.getElementById('questionText');
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            const mathSpan = document.createElement('span');
+            mathSpan.className = 'latex-math'; // Add a class for KaTeX auto-rendering
+            mathSpan.textContent = '\\( \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a} \\)'; // Default math equation
+
+            range.deleteContents();
+            range.insertNode(mathSpan);
+            selection.collapseToEnd();
+            renderMathInElement(editor); // Render the newly inserted math
+        }
+
+        const paperQuestions = [];
+
+        async function addQuestionToPaper(id) {
+            const transaction = db.transaction([OBJECT_STORE_NAME], 'readonly');
+            const store = transaction.objectStore(OBJECT_STORE_NAME);
+            const question = await store.get(id);
+
+            if (question && !paperQuestions.some(q => q.id === question.id)) {
+                paperQuestions.push(question);
+                renderPaperQuestions();
+                generatePaperPreview();
+            } else if (question) {
+                alert('Question already added to the paper.');
+            }
+        }
+
+        function renderPaperQuestions() {
+            const paperQuestionsList = document.getElementById('paperQuestionsList');
+            paperQuestionsList.innerHTML = '';
+            paperQuestions.forEach((q, index) => {
+                const li = document.createElement('li');
+                li.className = 'paper-question-item';
+                li.dataset.questionId = q.id;
+                li.innerHTML = `
+                    <span>
+                        <strong>${index + 1}. ${q.subject} (${q.type}, ${q.marks} Marks)</strong>
+                        <div style="display:inline-block;" data-text-direction="${q.direction || 'ltr'}">${q.text.length > 100 ? q.text.substring(0, 100) + '...' : q.text}</div>
+                    </span>
+                    <div class="actions">
+                        <button onclick="removeQuestionFromPaper(${q.id})" class="danger">Remove</button>
+                    </div>
+                `;
+                paperQuestionsList.appendChild(li);
+                renderMathInElement(li); // Render math for question in paper list
+            });
+        }
+
+        function removeQuestionFromPaper(id) {
+            const index = paperQuestions.findIndex(q => q.id === id);
+            if (index > -1) {
+                paperQuestions.splice(index, 1);
+                renderPaperQuestions();
+                generatePaperPreview();
+            }
+        }
+
+        function clearPaperQuestions() {
+            if (!confirm('Are you sure you want to clear all questions from the paper?')) {
+                return;
+            }
+            paperQuestions.length = 0;
+            renderPaperQuestions();
+            generatePaperPreview();
+        }
+
+        function generatePaperPreview() {
+            const schoolName = document.getElementById('schoolName').value;
+            const examTitle = document.getElementById('examTitle').value;
+            const paperSubject = document.getElementById('paperSubject').value;
+            const totalMarks = document.getElementById('totalMarks').value;
+            const examDuration = document.getElementById('examDuration').value;
+
+            const previewDiv = document.getElementById('livePaperPreview');
+            previewDiv.innerHTML = `
+                <div class="paper-header">
+                    <p><strong>${schoolName}</strong></p>
+                    <p><strong>${examTitle}</strong></p>
+                    <p><strong>Subject: ${paperSubject}</strong></p>
+                    <p>Total Marks: ${totalMarks} &nbsp; | &nbsp; Duration: ${examDuration} minutes</p>
+                    <hr>
+                </div>
+                <h3>Instructions:</h3>
+                <ul>
+                    <li>Attempt all questions.</li>
+                    <li>Read each question carefully before answering.</li>
+                    <li>Marks are indicated against each question.</li>
+                </ul>
+                <h3>Questions:</h3>
+                <ol id="paper-preview-questions"></ol>
+            `;
+
+            const previewQuestionsList = previewDiv.querySelector('#paper-preview-questions');
+            paperQuestions.forEach((q, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div data-question-id="${q.id}" data-text-direction="${q.direction || 'ltr'}">
+                        ${q.text} <br>
+                        <em>(${q.type}, ${q.marks} Marks)</em>
+                    </div>
+                `;
+                previewQuestionsList.appendChild(li);
+            });
+            renderMathInElement(previewDiv); // Render math in the entire preview area
+        }
+
+        function exportPaper(format) {
+            const element = document.getElementById('livePaperPreview');
+            const schoolName = document.getElementById('schoolName').value.replace(/\s/g, '_');
+            const examTitle = document.getElementById('examTitle').value.replace(/\s/g, '_');
+            const filename = `${schoolName}_${examTitle}_Paper.${format}`;
+
+            if (format === 'pdf') {
+                html2pdf().from(element).set({
+                    margin: [10, 10, 10, 10],
+                    filename: filename,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, logging: true, dpi: 192, letterRendering: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                }).save();
+            } else if (format === 'image') {
+                html2canvas(element).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.href = imgData;
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }).catch(error => {
+                    console.error('Error generating image:', error);
+                    alert('Could not generate image. Please try again.');
+                });
+            }
+        }
+
+        async function exportData() {
+            const transaction = db.transaction([OBJECT_STORE_NAME], 'readonly');
+            const store = transaction.objectStore(OBJECT_STORE_NAME);
+            const allQuestions = await store.getAll();
+
+            const data = {
+                questions: allQuestions,
+                paperDetails: {
+                    schoolName: document.getElementById('schoolName').value,
+                    examTitle: document.getElementById('examTitle').value,
+                    paperSubject: document.getElementById('paperSubject').value,
+                    totalMarks: document.getElementById('totalMarks').value,
+                    examDuration: document.getElementById('examDuration').value,
+                    selectedQuestions: paperQuestions.map(q => q.id) // Only store IDs for selected questions
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'exam_generator_data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('Data backed up successfully!');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+
+                    if (confirm('Importing data will replace existing questions and paper. Are you sure?')) {
+                        const transaction = db.transaction([OBJECT_STORE_NAME], 'readwrite');
+                        const store = transaction.objectStore(OBJECT_STORE_NAME);
+                        await store.clear(); // Clear existing data
+
+                        for (const q of importedData.questions) {
+                            // Remove ID to let IndexedDB auto-generate new ones if needed,
+                            // or keep it if we want to retain original IDs (if unique).
+                            // For simplicity and to prevent conflicts on existing IDs, we'll remove it.
+                            delete q.id; 
+                            await store.add(q);
+                        }
+                        
+                        alert('Data restored successfully!');
+                        loadQuestions();
+
+                        // Restore paper details and selected questions
+                        if (importedData.paperDetails) {
+                            document.getElementById('schoolName').value = importedData.paperDetails.schoolName || '';
+                            document.getElementById('examTitle').value = importedData.paperDetails.examTitle || '';
+                            document.getElementById('paperSubject').value = importedData.paperDetails.paperSubject || '';
+                            document.getElementById('totalMarks').value = importedData.paperDetails.totalMarks || '';
+                            document.getElementById('examDuration').value = importedData.paperDetails.examDuration || '';
+
+                            // Re-add selected questions to paperQuestions array
+                            paperQuestions.length = 0; // Clear current paper questions
+                            const allStoredQuestions = await store.getAll();
+                            if (importedData.paperDetails.selectedQuestions && Array.isArray(importedData.paperDetails.selectedQuestions)) {
+                                importedData.paperDetails.selectedQuestions.forEach(selectedId => {
+                                    const foundQuestion = allStoredQuestions.find(q => q.id === selectedId);
+                                    if (foundQuestion) {
+                                        paperQuestions.push(foundQuestion);
+                                    }
+                                });
+                            }
+                            renderPaperQuestions();
+                            generatePaperPreview();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error importing data:', error);
+                    alert('Failed to import data. Please ensure it is a valid JSON file. Error: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function loadSampleData() {
+            if (confirm('Loading sample data will clear your current question bank. Proceed?')) {
+                const sampleQuestions = [
+                    {
+                        text: 'What is the capital of Pakistan? <br> A) Lahore <br> B) Karachi <br> C) Islamabad <br> D) Faisalabad',
+                        type: 'MCQ',
+                        subject: 'General Knowledge',
+                        marks: 5,
+                        direction: 'ltr'
+                    },
+                    {
+                        text: 'Explain the concept of **democracy** in your own words.',
+                        type: 'Short Answer',
+                        subject: 'Social Studies',
+                        marks: 10,
+                        direction: 'ltr'
+                    },
+                    {
+                        text: 'فہم القرآن کے لغوی معنی بیان کریں۔ (Explain the literal meaning of "Fahm ul Quran".)',
+                        type: 'Short Answer',
+                        subject: 'Urdu',
+                        marks: 7,
+                        direction: 'rtl'
+                    },
+                    {
+                        text: 'Derive the quadratic formula: \\(x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}\\)',
+                        type: 'Long Answer',
+                        subject: 'Mathematics',
+                        marks: 15,
+                        direction: 'ltr'
+                    }
+                ];
+
+                const transaction = db.transaction([OBJECT_STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(OBJECT_STORE_NAME);
+                await store.clear(); // Clear existing data
+
+                for (const q of sampleQuestions) {
+                    await store.add(q);
+                }
+                alert('Sample data loaded!');
+                loadQuestions();
+                clearPaperQuestions(); // Clear paper after loading samples
+            }
+        }
+    </script>
+</body>
+</html>

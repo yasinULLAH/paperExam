@@ -1,0 +1,2477 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Paper Maker & Management Software - ICMS Format</title>
+
+    <!-- Urdu & System Fonts -->
+    <link rel="stylesheet" href="libs/noto-nastaliq-urdu.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Libraries for Standalone & Offline/Online Deployment -->
+    <script src="libs/html2canvas.min.js"></script>
+    <script>
+        if (typeof html2canvas === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>');
+        }
+    </script>
+    <script src="libs/jspdf.umd.min.js"></script>
+    <script>
+        if (!window.jspdf && typeof jsPDF === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>');
+        }
+    </script>
+
+    <style>
+        /* ===== BASE STYLES & RESET ===== */
+        * {
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        /* Top App Header */
+        .app-top-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: #ffffff;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        .app-top-header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .app-top-header .app-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Container */
+        .app-main-content {
+            max-width: 1300px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+
+        /* Form Controls & Utility */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 220px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #0f172a;
+            background-color: #ffffff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+        .form-control:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            line-height: 1.4;
+        }
+        .btn:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn-primary {
+            background-color: #2563eb;
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-secondary {
+            background-color: #64748b;
+            color: #ffffff;
+        }
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+        .btn-success {
+            background-color: #16a34a;
+            color: #ffffff;
+        }
+        .btn-success:hover {
+            background-color: #15803d;
+        }
+        .btn-danger {
+            background-color: #dc2626;
+            color: #ffffff;
+        }
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+        .btn-info {
+            background-color: #0284c7;
+            color: #ffffff;
+        }
+        .btn-info:hover {
+            background-color: #0369a1;
+        }
+        .btn-warning {
+            background-color: #d97706;
+            color: #ffffff;
+        }
+        .btn-warning:hover {
+            background-color: #b45309;
+        }
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12.5px;
+            border-radius: 4px;
+        }
+
+        /* ===== EXAM PAPER GENERATOR & ICMS FORMAT STYLES ===== */
+        .exam-paper-builder-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .exam-paper-actions-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            background: #ffffff;
+            padding: 12px 18px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+        .exam-paper-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+        .exam-paper-controls-col {
+            width: 100%;
+        }
+        .exam-paper-preview-col {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .exam-paper-card {
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+        .exam-paper-card-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3b82f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .exam-section-card {
+            background: #f8fafc;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: all 0.2s;
+        }
+        .exam-section-card:hover {
+            border-color: #94a3b8;
+        }
+        .exam-section-header {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .exam-question-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .exam-question-top {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .exam-qno-badge {
+            background: #1e293b;
+            color: #ffffff;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .mcq-item-row {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+        .mcq-options-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 6px;
+        }
+        @media (max-width: 768px) {
+            .mcq-options-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .subjective-item-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .urdu-text-input {
+            direction: rtl;
+            text-align: right;
+            font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', Tahoma, sans-serif;
+            font-size: 15px;
+        }
+        .logo-preview-box {
+            width: 70px;
+            height: 70px;
+            border: 1px dashed #cbd5e1;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+        .logo-preview-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* ===== ICMS PROFESSIONAL PAPER PREVIEW STYLES ===== */
+        .icms-preview-panel {
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+        .icms-preview-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f1f5f9;
+            padding: 10px 16px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            border: 1px solid #cbd5e1;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .icms-paper-wrapper {
+            background: #525659;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .icms-paper {
+            --paper-font-size: 14px;
+            --paper-margin-top: 15mm;
+            --paper-margin-bottom: 15mm;
+            --paper-margin-left: 18mm;
+            --paper-margin-right: 18mm;
+            --paper-line-height: 1.4;
+            --paper-question-gap: 11px;
+
+            width: 210mm;
+            min-height: 297mm;
+            background: #ffffff;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+            padding: var(--paper-margin-top) var(--paper-margin-right) var(--paper-margin-bottom) var(--paper-margin-left);
+            box-sizing: border-box;
+            font-family: 'Times New Roman', Times, 'Liberation Serif', serif;
+            color: #000000;
+            position: relative;
+            font-size: var(--paper-font-size);
+            line-height: var(--paper-line-height);
+            transition: padding 0.15s ease, font-size 0.15s ease;
+        }
+        .icms-header-container {
+            position: relative;
+            margin-bottom: calc(var(--paper-question-gap) * 0.25);
+            min-height: 65px;
+        }
+        .icms-school-title {
+            text-align: center;
+            font-size: calc(var(--paper-font-size) * 1.36);
+            font-weight: bold;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            margin: 0 0 calc(var(--paper-question-gap) * 0.7) 0;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            font-family: 'Times New Roman', Times, serif;
+            padding: 0 65px;
+        }
+        .icms-header-logo {
+            position: absolute;
+            right: 0;
+            top: 0;
+            max-width: 65px;
+            max-height: 65px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+        .icms-meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 4px;
+            font-size: var(--paper-font-size);
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .icms-meta-table td {
+            padding: calc(var(--paper-question-gap) * 0.18) 0;
+            border: none !important;
+            background: transparent !important;
+            vertical-align: middle;
+            color: #000000;
+        }
+        .icms-header-container.has-logo .icms-meta-table td.icms-meta-right,
+        .icms-header-container.has-logo .icms-meta-table td:last-child {
+            padding-right: 75px !important;
+        }
+        .icms-header-container:not(.has-logo) .icms-meta-table td.icms-meta-right,
+        .icms-header-container:not(.has-logo) .icms-meta-table td:last-child {
+            padding-right: 0;
+        }
+        .icms-meta-table td.icms-meta-right {
+            white-space: nowrap;
+        }
+        .icms-header-divider {
+            border-bottom: 3.5px double #000000;
+            margin: calc(var(--paper-question-gap) * 0.5) 0 var(--paper-question-gap) 0;
+        }
+        .icms-section-heading {
+            text-align: center;
+            font-weight: bold;
+            font-size: calc(var(--paper-font-size) * 1.08);
+            margin: calc(var(--paper-question-gap) * 1.1) 0 calc(var(--paper-question-gap) * 0.5) 0;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .icms-section-sub {
+            text-align: center;
+            font-size: calc(var(--paper-font-size) * 0.93);
+            font-style: italic;
+            margin-bottom: calc(var(--paper-question-gap) * 0.5);
+        }
+        .icms-question-block {
+            margin-bottom: var(--paper-question-gap);
+            page-break-inside: avoid;
+        }
+        .icms-question-header {
+            font-weight: bold;
+            font-size: calc(var(--paper-font-size) * 1.04);
+            margin-bottom: calc(var(--paper-question-gap) * 0.35);
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        .icms-mcq-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .icms-mcq-single {
+            margin-bottom: calc(var(--paper-question-gap) * 0.45);
+            page-break-inside: avoid;
+        }
+        .icms-mcq-question-text {
+            font-size: var(--paper-font-size);
+            margin-bottom: 3px;
+        }
+        .icms-mcq-choices {
+            display: flex;
+            flex-wrap: wrap;
+            padding-left: 20px;
+            gap: calc(var(--paper-question-gap) * 0.7) 30px;
+            font-size: calc(var(--paper-font-size) * 0.96);
+        }
+        .icms-subjective-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .icms-subjective-item {
+            margin-bottom: calc(var(--paper-question-gap) * 0.35);
+            font-size: var(--paper-font-size);
+            display: flex;
+            align-items: baseline;
+            page-break-inside: avoid;
+        }
+        .icms-subjective-item.is-urdu {
+            direction: rtl;
+            text-align: right;
+            justify-content: flex-start;
+            font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', Tahoma, sans-serif;
+            font-size: calc(var(--paper-font-size) * 1.15);
+            line-height: calc(var(--paper-line-height) * 1.25);
+        }
+        .icms-paragraph-text {
+            font-size: var(--paper-font-size);
+            line-height: calc(var(--paper-line-height) * 1.1);
+            margin: calc(var(--paper-question-gap) * 0.4) 0;
+            word-spacing: 2px;
+        }
+
+        /* ===== PRINTABLE MEDIA STYLES ===== */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            .app-top-header,
+            .no-print,
+            .exam-paper-controls-col,
+            .icms-preview-toolbar,
+            #notification,
+            #loading {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .app-main-content {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .exam-paper-grid {
+                display: block !important;
+            }
+            .exam-paper-preview-col {
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .icms-preview-panel {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            body * {
+                visibility: hidden !important;
+            }
+            #exam-paper-print-area, #exam-paper-print-area * {
+                visibility: visible !important;
+            }
+            #exam-paper-print-area {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                box-shadow: none !important;
+            }
+            .icms-paper-wrapper {
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+                box-shadow: none !important;
+            }
+            .icms-paper {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+                padding-top: var(--paper-margin-top, 15mm) !important;
+                padding-bottom: var(--paper-margin-bottom, 15mm) !important;
+                padding-left: var(--paper-margin-left, 18mm) !important;
+                padding-right: var(--paper-margin-right, 18mm) !important;
+            }
+        }
+
+        /* Loading Spinner */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.82);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .spinner {
+            border: 5px solid #e2e8f0;
+            border-top: 5px solid #2563eb;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Notification Toast */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 6px;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 10001;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+            pointer-events: none;
+        }
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .notification.success {
+            background-color: #16a34a;
+        }
+        .notification.error {
+            background-color: #dc2626;
+        }
+        .notification.info {
+            background-color: #0284c7;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Standalone Top App Header -->
+    <header class="app-top-header no-print">
+        <h1>
+            <span>📝 Exam Paper Maker & Management System</span>
+        </h1>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="app-badge">ICMS A4 Format</span>
+        </div>
+    </header>
+
+    <main class="app-main-content">
+        <!-- Main Exam Paper Builder Container -->
+        <div class="exam-paper-builder-container" id="exam-paper">
+
+            <!-- Top Actions Bar -->
+            <div class="exam-paper-actions-bar no-print">
+                <button class="btn btn-info" id="btn-load-icms-sample" type="button" style="font-weight: 600;">
+                    ⚡ Load Sample Paper (ICMS English)
+                </button>
+                <button class="btn btn-primary" id="btn-toggle-preview-top" type="button" style="font-weight: 600;" onclick="toggleExamPaperPreview()">
+                    🙈 Hide Preview
+                </button>
+                <button class="btn btn-success" id="btn-print-exam-paper" type="button" style="font-weight: 600;">
+                    🖨️ Print
+                </button>
+                <button class="btn btn-danger" id="btn-download-exam-pdf" type="button" style="font-weight: 600;">
+                    📥 Download PDF
+                </button>
+                <button class="btn btn-primary" id="btn-download-exam-png" type="button">
+                    🖼️ Download PNG
+                </button>
+                <button class="btn btn-info" id="btn-save-paper-template" type="button">
+                    💾 Save Paper
+                </button>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <select id="saved-papers-select" class="form-control" style="width: 200px; padding: 6px 10px; height: 35px;">
+                        <option value="">📂 Load Saved Paper...</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm" id="btn-load-saved-paper" type="button" title="Load selected paper">Load</button>
+                    <button class="btn btn-danger btn-sm" id="btn-delete-saved-paper" type="button" title="Delete selected paper">✕</button>
+                </div>
+                <button class="btn btn-danger" id="btn-reset-exam-paper" type="button" style="margin-left: auto;">
+                    🔄 Reset / New Paper
+                </button>
+            </div>
+
+            <!-- Single column builder layout (Form on top, preview toggleable below) -->
+            <div class="exam-paper-grid">
+                <!-- Form & Builder Controls (Full width on top) -->
+                <div class="exam-paper-controls-col no-print">
+                    <!-- 1. Header Information -->
+                    <div class="exam-paper-card">
+                        <div class="exam-paper-card-title">
+                            <span>📝 Paper Details & Header</span>
+                            <small style="font-size: 12px; font-weight: normal; color: #64748b;">Live updates in preview</small>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2;">
+                                <label class="form-label">School / College Name</label>
+                                <input class="form-control" id="paper-school-name" type="text" placeholder="e.g. ICMS SCHOOL SYSTEM TOWNSHIP BANNU" value="ICMS SCHOOL SYSTEM TOWNSHIP BANNU">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Class</label>
+                                <input class="form-control" id="paper-class-name" list="paper-class-list" type="text" placeholder="e.g. English or 5th Grade" value="English">
+                                <datalist id="paper-class-list"></datalist>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Paper / Subject</label>
+                                <input class="form-control" id="paper-subject-name" list="paper-subject-list" type="text" placeholder="e.g. English B or Mathematics" value="English B">
+                                <datalist id="paper-subject-list"></datalist>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Examination Name</label>
+                                <input class="form-control" id="paper-exam-name" list="paper-exam-list" type="text" placeholder="e.g. Examination Dec-2025" value="Examination Dec-2025">
+                                <datalist id="paper-exam-list"></datalist>
+                            </div>
+                            <div class="form-group" style="max-width: 140px;">
+                                <label class="form-label">Time Allowed</label>
+                                <input class="form-control" id="paper-time-allowed" type="text" placeholder="e.g. 3:00 Hours" value="3:00 Hours">
+                            </div>
+                            <div class="form-group" style="max-width: 130px;">
+                                <label class="form-label">Total Marks</label>
+                                <input class="form-control" id="paper-total-marks" type="number" placeholder="100" value="100">
+                            </div>
+                        </div>
+                        <div class="form-row" style="align-items: center;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">School Logo (Optional)</label>
+                                <input class="form-control" id="paper-logo-input" type="file" accept="image/*" style="padding: 6px;">
+                                <small style="color: #64748b;">Upload a logo image to display on the top-right of the paper</small>
+                            </div>
+                            <div class="logo-preview-box" id="paper-logo-preview-wrapper" title="Logo Preview">
+                                <span id="logo-preview-placeholder" style="font-size: 11px; color: #94a3b8; text-align: center;">No Logo</span>
+                                <img id="paper-logo-preview" src="" alt="Logo" style="display: none;">
+                            </div>
+                            <button class="btn btn-danger btn-sm" id="btn-remove-logo" type="button" style="display: none;" title="Remove uploaded logo">Remove Logo</button>
+                        </div>
+                        <div style="background: #f1f5f9; padding: 10px 14px; border-radius: 6px; margin-top: 10px; display: flex; flex-wrap: wrap; gap: 20px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; cursor: pointer; font-weight: 600; color: #1e293b;">
+                                <input type="checkbox" id="paper-restart-numbering" checked style="width: 17px; height: 17px;">
+                                <span>Restart Question Numbering per Section (Qno1, Qno2... in each section)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; cursor: pointer; color: #475569;">
+                                <input type="checkbox" id="paper-show-marks" checked style="width: 16px; height: 16px;">
+                                <span>Show Marks in Question Header</span>
+                            </label>
+                        </div>
+
+                        <!-- A4 Paper Layout, Margins & Text Size Settings (لکھائی کا سائز اور مارجن) -->
+                        <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 14px; margin-top: 14px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                                <div style="font-weight: 700; color: #0f172a; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                    <span>📐 A4 Paper Text Size & Margins (لکھائی کا سائز، مارجن اور فاصلہ)</span>
+                                </div>
+                                <!-- Quick Fit Presets -->
+                                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                    <button type="button" class="btn btn-sm" onclick="applyPaperLayoutPreset('few_questions')" style="background: #e0e7ff; color: #3730a3; font-weight: 600; font-size: 12px; border: 1px solid #c7d2fe;" title="کم سوالات ہوں تو تحریر بڑی اور فاصلہ زیادہ رکھیں تاکہ پورا A4 پیج خوبصورت بھر جائے">
+                                        ⚡ کم سوالات (Few Questions - Fill Page)
+                                    </button>
+                                    <button type="button" class="btn btn-sm" onclick="applyPaperLayoutPreset('normal')" style="background: #ecfdf5; color: #065f46; font-weight: 600; font-size: 12px; border: 1px solid #a7f3d0;" title="معیاری سیٹنگ">
+                                        ⚡ نارمل (Normal / Balanced)
+                                    </button>
+                                    <button type="button" class="btn btn-sm" onclick="applyPaperLayoutPreset('many_questions')" style="background: #fef3c7; color: #92400e; font-weight: 600; font-size: 12px; border: 1px solid #fde68a;" title="زیادہ سوالات ہوں تو تحریر چھوٹی کریں تاکہ 1 پیج پر پورا آ جائے">
+                                        ⚡ زیادہ سوالات (Compact / Fit Page)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-row" style="margin-bottom: 8px;">
+                                <!-- Font Size Control -->
+                                <div class="form-group" style="flex: 1; min-width: 220px;">
+                                    <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>🔤 Font / Text Size (لکھائی کا سائز)</span>
+                                        <span id="paper-font-size-badge" style="background: #3b82f6; color: white; border-radius: 4px; padding: 1px 8px; font-size: 11px; font-weight: bold;">14px</span>
+                                    </label>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="adjustPaperFontSize(-1)" title="Decrease text size" style="padding: 4px 10px; font-size: 14px; font-weight: bold; line-height: 1;">−</button>
+                                        <input type="range" id="paper-font-size-slider" min="11" max="22" step="1" value="14" style="flex: 1; cursor: pointer;" oninput="onPaperFontSizeChange(this.value)">
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="adjustPaperFontSize(1)" title="Increase text size" style="padding: 4px 10px; font-size: 14px; font-weight: bold; line-height: 1;">+</button>
+                                        <select class="form-control" id="paper-font-size-select" style="width: 110px; padding: 4px 8px; font-size: 12.5px;" onchange="onPaperFontSizeChange(this.value)">
+                                            <option value="11">11px (Tiny)</option>
+                                            <option value="12">12px (Small)</option>
+                                            <option value="13">13px (Compact)</option>
+                                            <option value="14" selected>14px (Normal)</option>
+                                            <option value="15">15px (Medium)</option>
+                                            <option value="16">16px (Large)</option>
+                                            <option value="17">17px (X-Large)</option>
+                                            <option value="18">18px (Huge)</option>
+                                            <option value="20">20px (Max)</option>
+                                            <option value="22">22px (Jumbo)</option>
+                                        </select>
+                                    </div>
+                                    <small style="color: #64748b; font-size: 11px;">سوالات کم ہوں تو سائز بڑا (16-18px)، زیادہ ہوں تو چھوٹا (12-13px) کریں</small>
+                                </div>
+
+                                <!-- Page Margins Control -->
+                                <div class="form-group" style="flex: 1; min-width: 220px;">
+                                    <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>📐 Page Margins (حاشیہ / مارجن)</span>
+                                        <span id="paper-margin-badge" style="background: #0ea5e9; color: white; border-radius: 4px; padding: 1px 8px; font-size: 11px; font-weight: bold;">Normal (15mm)</span>
+                                    </label>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <select class="form-control" id="paper-margin-preset" style="flex: 1; padding: 5px 8px; font-size: 13px;" onchange="onPaperMarginPresetChange(this.value)">
+                                            <option value="narrow">Narrow / Tight (8mm) - زیادہ سوالات کے لیے</option>
+                                            <option value="normal" selected>Normal (15mm) - معیاری حاشیہ</option>
+                                            <option value="wide">Wide / Spacious (22mm) - کم سوالات کے لیے</option>
+                                            <option value="custom">Custom (کسٹم ملی میٹر)...</option>
+                                        </select>
+                                    </div>
+                                    <!-- Custom Margin Inputs -->
+                                    <div id="paper-custom-margins-row" style="display: none; margin-top: 6px; gap: 8px; align-items: center; background: #ffffff; padding: 6px 10px; border-radius: 4px; border: 1px solid #cbd5e1;">
+                                        <label style="font-size: 11px; font-weight: 600; margin: 0;">Top/Bot:</label>
+                                        <input type="number" id="paper-margin-tb" class="form-control" style="width: 58px; padding: 2px 6px; font-size: 12px;" min="4" max="40" value="15" onchange="onCustomMarginChange()">
+                                        <span style="font-size: 11px;">mm</span>
+                                        <label style="font-size: 11px; font-weight: 600; margin: 0; margin-left: 6px;">Left/Right:</label>
+                                        <input type="number" id="paper-margin-lr" class="form-control" style="width: 58px; padding: 2px 6px; font-size: 12px;" min="4" max="40" value="18" onchange="onCustomMarginChange()">
+                                        <span style="font-size: 11px;">mm</span>
+                                    </div>
+                                    <small style="color: #64748b; font-size: 11px;">A4 کاغذ کے چاروں طرف خالی حاشیہ کی پیمائش</small>
+                                </div>
+                            </div>
+
+                            <div class="form-row" style="margin-bottom: 0;">
+                                <!-- Question Spacing Control -->
+                                <div class="form-group" style="flex: 1; min-width: 180px;">
+                                    <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>↔️ Question Spacing (سوالات کا فاصلہ)</span>
+                                        <span id="paper-qgap-badge" style="background: #8b5cf6; color: white; border-radius: 4px; padding: 1px 8px; font-size: 11px; font-weight: bold;">11px</span>
+                                    </label>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <input type="range" id="paper-qgap-slider" min="4" max="36" step="2" value="11" style="flex: 1; cursor: pointer;" oninput="onPaperQGapChange(this.value)">
+                                        <select class="form-control" id="paper-qgap-select" style="width: 120px; padding: 4px 8px; font-size: 12.5px;" onchange="onPaperQGapChange(this.value)">
+                                            <option value="6">Tight (6px)</option>
+                                            <option value="11" selected>Normal (11px)</option>
+                                            <option value="18">Relaxed (18px)</option>
+                                            <option value="26">Spacious (26px)</option>
+                                            <option value="34">Max Gap (34px)</option>
+                                        </select>
+                                    </div>
+                                    <small style="color: #64748b; font-size: 11px;">کم سوالات ہوں تو فاصلہ بڑھائیں تاکہ نیچے زیادہ خالی جگہ نہ بچے</small>
+                                </div>
+
+                                <!-- Line Height Control -->
+                                <div class="form-group" style="flex: 1; min-width: 180px;">
+                                    <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>↕️ Line Height (سطروں کا درمیانی فاصلہ)</span>
+                                        <span id="paper-lineheight-badge" style="background: #10b981; color: white; border-radius: 4px; padding: 1px 8px; font-size: 11px; font-weight: bold;">1.4x</span>
+                                    </label>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <select class="form-control" id="paper-lineheight-select" style="flex: 1; padding: 5px 8px; font-size: 13px;" onchange="onPaperLineHeightChange(this.value)">
+                                            <option value="1.25">Tight / Compact (1.25x)</option>
+                                            <option value="1.4" selected>Standard (1.4x)</option>
+                                            <option value="1.6">Relaxed / 1.6x (کم سوالات کے لیے)</option>
+                                            <option value="1.85">Double / Spacious (1.85x)</option>
+                                        </select>
+                                    </div>
+                                    <small style="color: #64748b; font-size: 11px;">ہر سوال کے اندر لائنوں کے درمیان فاصلہ</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Sections & Questions Builder -->
+                    <div class="exam-paper-card">
+                        <div class="exam-paper-card-title">
+                            <span>📚 Sections & Questions</span>
+                            <button class="btn btn-primary btn-sm" id="btn-add-section" type="button">
+                                + Add New Section
+                            </button>
+                        </div>
+                        <div id="exam-sections-container">
+                            <!-- Dynamically populated sections -->
+                        </div>
+                        <div style="margin-top: 15px; text-align: center;">
+                            <button class="btn btn-primary" id="btn-add-section-bottom" type="button" style="padding: 8px 18px;">
+                                + Add New Section (e.g. Section – B, Section – C)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Dedicated Preview Button -->
+                    <div style="margin-top: 25px; padding: 22px; background: #f0fdf4; border: 2px dashed #86efac; border-radius: 8px; text-align: center;">
+                        <p style="margin: 0 0 12px 0; font-size: 15px; color: #166534; font-weight: 600;">
+                            ✨ تمام سوالات اور تفصیلات درج کرنے کے بعد پرچہ دیکھنے کے لیے نیچے کلک کریں:
+                        </p>
+                        <button class="btn btn-success" id="btn-toggle-preview-bottom" type="button" onclick="toggleExamPaperPreview()" style="padding: 12px 30px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.35);">
+                            🙈 Hide Paper Preview (پریویو چھپائیں)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Paper Preview Section (Shows below form when user clicks View Paper Preview) -->
+                <div class="exam-paper-preview-col" id="exam-paper-preview-section" style="display: block;">
+                    <div class="icms-preview-panel">
+                        <div class="icms-preview-toolbar no-print" style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; width: 100%;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <h4 style="margin: 0; color: #1e293b; font-size: 16px; font-weight: bold;">📄 Exam Paper Preview (ICMS Format)</h4>
+                                    <span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">A4 Format</span>
+                                </div>
+                                <div class="no-print" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <button class="btn btn-success btn-sm" onclick="printExamPaper()" type="button" title="Print paper">🖨️ Print</button>
+                                    <button class="btn btn-danger btn-sm" onclick="downloadExamPaperPDF()" type="button" title="Download PDF">📥 PDF</button>
+                                    <button class="btn btn-primary btn-sm" onclick="exportExamPaperPNG()" type="button" title="Download PNG">🖼️ PNG</button>
+                                    <button class="btn btn-danger btn-sm" onclick="toggleExamPaperPreview(false)" type="button" style="background-color: #64748b;" title="Hide preview">✕ Hide Preview</button>
+                                </div>
+                            </div>
+                            <!-- Live paper layout & size adjustment bar right above the paper -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: #f8fafc; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; width: 100%; box-sizing: border-box;">
+                                <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #334155;">
+                                    <span style="font-weight: 700; color: #0f172a;">⚡ Live A4 Fit:</span>
+                                    <button type="button" class="btn btn-sm" onclick="applyPaperLayoutPreset('few_questions')" style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; font-size: 11px; font-weight: 600; border: 1px solid #c7d2fe;" title="کم سوالات ہوں تو سائز اور حاشیہ بڑا کریں">کم سوالات (Large)</button>
+                                    <button type="button" class="btn btn-sm" onclick="applyPaperLayoutPreset('normal')" style="background: #ecfdf5; color: #065f46; padding: 2px 8px; font-size: 11px; font-weight: 600; border: 1px solid #a7f3d0;" title="نارمل سائز">نارمل (Normal)</button>
+                                    <button type="button" class="btn btn-sm" onclick="applyPaperLayoutPreset('many_questions')" style="background: #fef3c7; color: #92400e; padding: 2px 8px; font-size: 11px; font-weight: 600; border: 1px solid #fde68a;" title="زیادہ سوالات کے لیے کمپیکٹ سائز">زیادہ سوالات (Compact)</button>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12.5px;">
+                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                        <span style="font-weight: 600; color: #475569;">Text Size:</span>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="adjustPaperFontSize(-1)" style="padding: 1px 8px; font-size: 12px; font-weight: bold;" title="Decrease text size">A−</button>
+                                        <span id="preview-font-size-indicator" style="font-weight: bold; min-width: 36px; text-align: center; color: #1e293b;">14px</span>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="adjustPaperFontSize(1)" style="padding: 1px 8px; font-size: 12px; font-weight: bold;" title="Increase text size">A+</button>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                        <span style="font-weight: 600; color: #475569;">Margin:</span>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="cyclePaperMargin()" id="preview-margin-btn" style="padding: 2px 8px; font-size: 11px;" title="Click to cycle: Narrow -> Normal -> Wide">📐 Normal (15mm)</button>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                        <span style="font-weight: 600; color: #475569;">Spacing:</span>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="cyclePaperSpacing()" id="preview-spacing-btn" style="padding: 2px 8px; font-size: 11px;" title="Click to cycle: Tight -> Normal -> Wide">↔️ Normal</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="icms-paper-wrapper">
+                            <div id="exam-paper-print-area">
+                                <div class="icms-paper" id="icms-paper-document">
+                                    <!-- Header Section -->
+                                    <div class="icms-header-container" id="icms-header-container">
+                                        <img class="icms-header-logo" id="pv-logo-img" src="" alt="School Logo" style="display: none;">
+                                        <h1 class="icms-school-title" id="pv-school-title">ICMS SCHOOL SYSTEM TOWNSHIP BANNU</h1>
+                                        <table class="icms-meta-table">
+                                            <tbody>
+                                                <!-- Row 1: Class (left) and Time (right) -->
+                                                <tr>
+                                                    <td style="width: 33%; text-align: left; vertical-align: middle; white-space: nowrap;">
+                                                        <strong>Class:</strong> <span id="pv-class-text">English</span>
+                                                    </td>
+                                                    <td style="width: 34%; text-align: center; vertical-align: middle;"></td>
+                                                    <td class="icms-meta-right" style="width: 33%; text-align: right; vertical-align: middle; white-space: nowrap;">
+                                                        <strong>Time:</strong> <span id="pv-time-text">3:00 Hours</span>
+                                                    </td>
+                                                </tr>
+                                                <!-- Row 2: Paper (left), Examination (center), Total Marks (right) -->
+                                                <tr>
+                                                    <td style="width: 33%; text-align: left; vertical-align: middle; white-space: nowrap;">
+                                                        <strong>Paper:</strong> <span id="pv-paper-text">English B</span>
+                                                    </td>
+                                                    <td style="width: 34%; text-align: center; font-weight: bold; font-size: 14.5px; vertical-align: middle; white-space: nowrap;">
+                                                        <span id="pv-exam-text">Examination Dec-2025</span>
+                                                    </td>
+                                                    <td class="icms-meta-right" style="width: 33%; text-align: right; vertical-align: middle; white-space: nowrap;">
+                                                        <strong>Total Marks:</strong> <span id="pv-marks-text">100</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="icms-header-divider"></div>
+                                    </div>
+                                    <!-- Dynamic Sections & Questions Content -->
+                                    <div id="pv-sections-content">
+                                        <!-- Rendered in real-time -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Controls inside Preview -->
+                        <div class="no-print" style="margin-top: 15px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                            <button class="btn btn-success" onclick="printExamPaper()" type="button" style="padding: 8px 22px; font-weight: bold;">🖨️ Print Exam Paper</button>
+                            <button class="btn btn-danger" onclick="downloadExamPaperPDF()" type="button" style="padding: 8px 22px; font-weight: bold;">📥 Download PDF</button>
+                            <button class="btn btn-info" onclick="scrollToPaperForm()" type="button" style="padding: 8px 22px;">⬆️ Back to Form / Edit</button>
+                            <button class="btn btn-secondary" onclick="toggleExamPaperPreview(false)" type="button" style="padding: 8px 22px; background: #64748b; color: white;">🙈 Hide Preview</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== JAVASCRIPT APPLICATION LOGIC ===== -->
+    <script>
+        // Default Sample Paper matching ICMS.pdf specification
+        const ICMS_SAMPLE_PAPER = {
+            schoolName: "ICMS SCHOOL SYSTEM TOWNSHIP BANNU",
+            className: "English",
+            subjectName: "English B",
+            examName: "Examination Dec-2025",
+            timeAllowed: "3:00 Hours",
+            totalMarks: 100,
+            logoDataUrl: "",
+            restartNumberingPerSection: true,
+            showMarks: true,
+            fontSize: 14,
+            marginPreset: "normal",
+            marginTop: 15,
+            marginBottom: 15,
+            marginLeft: 18,
+            marginRight: 18,
+            lineSpacing: 1.4,
+            questionSpacing: 11,
+            sections: [
+                {
+                    id: "sec_a",
+                    title: "Section – A",
+                    subtitle: "",
+                    questions: [
+                        {
+                            id: "q_1",
+                            type: "mcq",
+                            title: "Choose the correct option –",
+                            marks: "",
+                            showQno: true,
+                            items: [
+                                { text: "The 2nd form of take.", options: ["took", "taken", "tooke", ""] },
+                                { text: "The 3rd form of see.", options: ["saw", "see", "seen", ""] },
+                                { text: "The 3rd form of grow.", options: ["grew", "growan", "grown", ""] },
+                                { text: "He did no ___ to school.", options: ["go", "gone", "went", ""] },
+                                { text: "Did she ___?", options: ["cry", "cried", "crying", ""] },
+                                { text: "We did not ___.", options: ["jump", "jumped", "jumping", ""] },
+                                { text: "___ April", options: ["for", "since", "none", ""] },
+                                { text: "___ three months.", options: ["since", "for", "ago", ""] },
+                                { text: "___ 2 o'clock", options: ["on", "for", "since", ""] },
+                                { text: "___ noon.", options: ["on", "since", "for", ""] }
+                            ]
+                        },
+                        {
+                            id: "q_2",
+                            type: "subjective",
+                            title: "Correct the following sentences.",
+                            marks: "(5 Marks)",
+                            showQno: true,
+                            format: "numbered",
+                            items: [
+                                "We combed our hair?",
+                                "You waited us?",
+                                "Did he helped you?",
+                                "They did eat not mangoes.",
+                                "Did you cried?"
+                            ],
+                            text: ""
+                        }
+                    ]
+                },
+                {
+                    id: "sec_b",
+                    title: "Section – B",
+                    subtitle: "",
+                    questions: [
+                        {
+                            id: "q_3",
+                            type: "subjective",
+                            title: "Attempt any five questions:",
+                            marks: "",
+                            showQno: true,
+                            format: "numbered",
+                            items: [
+                                "Define / Explain the past simple tense and also tell its identification.",
+                                "Write the identification and structure of the past continuous tense.",
+                                "Write the identification and structure of the past perfect tense.",
+                                "Add ing to the following words: bake, make, get, cut, love.",
+                                "Explain direct speech with example?",
+                                "Define Modal verbs?",
+                                "Write the structure of the past perfect continuous tense."
+                            ],
+                            text: ""
+                        },
+                        {
+                            id: "q_4",
+                            type: "subjective",
+                            title: "Translate the following sentences into English.",
+                            marks: "(10 Marks)",
+                            showQno: true,
+                            format: "numbered",
+                            items: [
+                                "اُس نے گلاس توڑا۔",
+                                "عابد نے مجھے ایک کیرہ دیا۔",
+                                "بچہ رو دیا تھا۔",
+                                "چوہا سوراخ میں داخل ہو گیا تھا۔",
+                                "وہ ہنڈی چولہا کھیل رہا تھا۔"
+                            ],
+                            text: ""
+                        },
+                        {
+                            id: "q_5",
+                            type: "subjective",
+                            title: "Change the sentences into indirect speech.",
+                            marks: "(10 Marks)",
+                            showQno: true,
+                            format: "numbered",
+                            items: [
+                                "He says, “I study in class 5.”",
+                                "She says, “I respect my teacher.”",
+                                "She says to me, “You can win the match.”",
+                                "He says to her, “You are my sister.”",
+                                "She says, “He is in class 5.”"
+                            ],
+                            text: ""
+                        }
+                    ]
+                },
+                {
+                    id: "sec_c",
+                    title: "Section – C",
+                    subtitle: "",
+                    questions: [
+                        {
+                            id: "q_6",
+                            type: "subjective",
+                            title: "",
+                            marks: "",
+                            showQno: false,
+                            format: "paragraph",
+                            items: [],
+                            text: "1) Essay    2) Write a letter to a friend to ask about his health.    3) Write a short story."
+                        }
+                    ]
+                }
+            ]
+        };
+
+        let currentExamPaper = null;
+        let isExamPaperMakerInitialized = false;
+
+        // Notification & Loading Handlers
+        function showLoading() {
+            const loadingElement = document.getElementById('loading');
+            if (loadingElement) loadingElement.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            const loadingElement = document.getElementById('loading');
+            if (loadingElement) loadingElement.style.display = 'none';
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.textContent = message;
+                notification.className = 'notification ' + type;
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3200);
+            }
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function isUrduContent(str) {
+            if (!str) return false;
+            return /[\u0600-\u06FF]/.test(str);
+        }
+
+        // Initialize Exam Paper Software
+        function initExamPaperMaker() {
+            if (isExamPaperMakerInitialized) {
+                populateExamPaperDatalists();
+                return;
+            }
+            isExamPaperMakerInitialized = true;
+
+            // Load saved draft or default to sample
+            try {
+                const draft = localStorage.getItem('current_exam_paper_draft');
+                if (draft) {
+                    currentExamPaper = JSON.parse(draft);
+                } else {
+                    currentExamPaper = JSON.parse(JSON.stringify(ICMS_SAMPLE_PAPER));
+                }
+            } catch (e) {
+                currentExamPaper = JSON.parse(JSON.stringify(ICMS_SAMPLE_PAPER));
+            }
+
+            // Fallback defaults
+            if (!currentExamPaper.fontSize) currentExamPaper.fontSize = 14;
+            if (!currentExamPaper.marginPreset) currentExamPaper.marginPreset = 'normal';
+            if (currentExamPaper.marginTop === undefined) currentExamPaper.marginTop = 15;
+            if (currentExamPaper.marginBottom === undefined) currentExamPaper.marginBottom = 15;
+            if (currentExamPaper.marginLeft === undefined) currentExamPaper.marginLeft = 18;
+            if (currentExamPaper.marginRight === undefined) currentExamPaper.marginRight = 18;
+            if (!currentExamPaper.lineSpacing) currentExamPaper.lineSpacing = 1.4;
+            if (currentExamPaper.questionSpacing === undefined) currentExamPaper.questionSpacing = 11;
+
+            bindExamPaperHeaderEvents();
+            populateExamPaperDatalists();
+            refreshSavedPapersDropdown();
+
+            syncExamPaperFormFromModel();
+            renderExamPaperSectionsBuilder();
+            renderExamPaperLivePreview();
+        }
+
+        function populateExamPaperDatalists() {
+            const defaultClasses = ["Play Group", "Nursery", "Prep", "1st Grade", "2nd Grade", "3rd Grade", "4th Grade", "5th Grade", "6th Grade", "7th Grade", "8th Grade", "9th Grade", "10th Grade", "1st Year", "2nd Year", "English"];
+            const defaultSubjects = ["English", "English A", "English B", "Urdu", "Mathematics", "General Science", "Physics", "Chemistry", "Biology", "Computer Science", "Islamiat", "Pak Studies", "Social Studies"];
+            const defaultExams = ["Annual Examination 2026", "Examination Dec-2025", "Examination Dec-2026", "Mid Term Examination", "First Term Examination", "Final Term Examination", "Monthly Test"];
+
+            const classList = document.getElementById('paper-class-list');
+            const subjectList = document.getElementById('paper-subject-list');
+            const examList = document.getElementById('paper-exam-list');
+
+            if (classList) classList.innerHTML = defaultClasses.map(c => `<option value="${c}"></option>`).join('');
+            if (subjectList) subjectList.innerHTML = defaultSubjects.map(s => `<option value="${s}"></option>`).join('');
+            if (examList) examList.innerHTML = defaultExams.map(e => `<option value="${e}"></option>`).join('');
+        }
+
+        function bindExamPaperHeaderEvents() {
+            const bindInput = (id, prop, isNum = false) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('input', () => {
+                    currentExamPaper[prop] = isNum ? (parseFloat(el.value) || 0) : el.value;
+                    saveExamPaperDraft();
+                    renderExamPaperLivePreview();
+                });
+            };
+
+            bindInput('paper-school-name', 'schoolName');
+            bindInput('paper-class-name', 'className');
+            bindInput('paper-subject-name', 'subjectName');
+            bindInput('paper-exam-name', 'examName');
+            bindInput('paper-time-allowed', 'timeAllowed');
+            bindInput('paper-total-marks', 'totalMarks', true);
+
+            // Checkbox for restarting numbering per section
+            const restartNumCb = document.getElementById('paper-restart-numbering');
+            if (restartNumCb) {
+                restartNumCb.addEventListener('change', () => {
+                    currentExamPaper.restartNumberingPerSection = restartNumCb.checked;
+                    saveExamPaperDraft();
+                    renderExamPaperSectionsBuilder();
+                    renderExamPaperLivePreview();
+                });
+            }
+
+            // Checkbox for showing marks
+            const showMarksCb = document.getElementById('paper-show-marks');
+            if (showMarksCb) {
+                showMarksCb.addEventListener('change', () => {
+                    currentExamPaper.showMarks = showMarksCb.checked;
+                    saveExamPaperDraft();
+                    renderExamPaperLivePreview();
+                });
+            }
+
+            // Logo file input
+            const logoInput = document.getElementById('paper-logo-input');
+            const removeLogoBtn = document.getElementById('btn-remove-logo');
+            if (logoInput) {
+                logoInput.addEventListener('change', function (e) {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function (evt) {
+                        currentExamPaper.logoDataUrl = evt.target.result;
+                        updateLogoPreview();
+                        saveExamPaperDraft();
+                        renderExamPaperLivePreview();
+                        showNotification('School logo uploaded successfully.', 'success');
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            if (removeLogoBtn) {
+                removeLogoBtn.addEventListener('click', () => {
+                    currentExamPaper.logoDataUrl = "";
+                    if (logoInput) logoInput.value = "";
+                    updateLogoPreview();
+                    saveExamPaperDraft();
+                    renderExamPaperLivePreview();
+                    showNotification('Logo removed.', 'info');
+                });
+            }
+
+            // Top action buttons
+            document.getElementById('btn-load-icms-sample')?.addEventListener('click', () => {
+                if (confirm('Load sample English paper from ICMS.pdf? Any unsaved edits will be replaced.')) {
+                    currentExamPaper = JSON.parse(JSON.stringify(ICMS_SAMPLE_PAPER));
+                    saveExamPaperDraft();
+                    syncExamPaperFormFromModel();
+                    renderExamPaperSectionsBuilder();
+                    renderExamPaperLivePreview();
+                    showNotification('ICMS Sample Exam Paper loaded!', 'success');
+                }
+            });
+
+            document.getElementById('btn-reset-exam-paper')?.addEventListener('click', () => {
+                if (confirm('Start a new blank exam paper?')) {
+                    currentExamPaper = {
+                        schoolName: document.getElementById('paper-school-name')?.value || "ICMS SCHOOL SYSTEM TOWNSHIP BANNU",
+                        className: "",
+                        subjectName: "",
+                        examName: "Examination 2026",
+                        timeAllowed: "3:00 Hours",
+                        totalMarks: 100,
+                        logoDataUrl: currentExamPaper.logoDataUrl || "",
+                        restartNumberingPerSection: true,
+                        showMarks: true,
+                        fontSize: 14,
+                        marginPreset: "normal",
+                        marginTop: 15,
+                        marginBottom: 15,
+                        marginLeft: 18,
+                        marginRight: 18,
+                        lineSpacing: 1.4,
+                        questionSpacing: 11,
+                        sections: [
+                            {
+                                id: 'sec_' + Date.now(),
+                                title: 'Section – A',
+                                subtitle: '',
+                                questions: []
+                            }
+                        ]
+                    };
+                    saveExamPaperDraft();
+                    syncExamPaperFormFromModel();
+                    renderExamPaperSectionsBuilder();
+                    renderExamPaperLivePreview();
+                    showNotification('Blank exam paper ready.', 'info');
+                }
+            });
+
+            document.getElementById('btn-print-exam-paper')?.addEventListener('click', printExamPaper);
+            document.getElementById('btn-download-exam-pdf')?.addEventListener('click', downloadExamPaperPDF);
+            document.getElementById('btn-download-exam-png')?.addEventListener('click', exportExamPaperPNG);
+            document.getElementById('btn-save-paper-template')?.addEventListener('click', saveExamPaperTemplate);
+            document.getElementById('btn-load-saved-paper')?.addEventListener('click', loadSelectedSavedPaper);
+            document.getElementById('btn-delete-saved-paper')?.addEventListener('click', deleteSelectedSavedPaper);
+
+            document.getElementById('btn-add-section')?.addEventListener('click', addNewSection);
+            document.getElementById('btn-add-section-bottom')?.addEventListener('click', addNewSection);
+        }
+
+        function updateLogoPreview() {
+            const previewImg = document.getElementById('paper-logo-preview');
+            const placeholder = document.getElementById('logo-preview-placeholder');
+            const removeBtn = document.getElementById('btn-remove-logo');
+            const pvLogoImg = document.getElementById('pv-logo-img');
+            const headerContainer = document.getElementById('icms-header-container');
+
+            if (currentExamPaper.logoDataUrl) {
+                if (previewImg) {
+                    previewImg.src = currentExamPaper.logoDataUrl;
+                    previewImg.style.display = 'block';
+                }
+                if (placeholder) placeholder.style.display = 'none';
+                if (removeBtn) removeBtn.style.display = 'inline-block';
+                if (pvLogoImg) {
+                    pvLogoImg.src = currentExamPaper.logoDataUrl;
+                    pvLogoImg.style.display = 'block';
+                }
+                if (headerContainer) {
+                    headerContainer.classList.add('has-logo');
+                }
+            } else {
+                if (previewImg) {
+                    previewImg.src = '';
+                    previewImg.style.display = 'none';
+                }
+                if (placeholder) placeholder.style.display = 'block';
+                if (removeBtn) removeBtn.style.display = 'none';
+                if (pvLogoImg) {
+                    pvLogoImg.src = '';
+                    pvLogoImg.style.display = 'none';
+                }
+                if (headerContainer) {
+                    headerContainer.classList.remove('has-logo');
+                }
+            }
+        }
+
+        function syncExamPaperFormFromModel() {
+            if (!currentExamPaper) return;
+            const setValue = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val !== undefined ? val : '';
+            };
+            setValue('paper-school-name', currentExamPaper.schoolName);
+            setValue('paper-class-name', currentExamPaper.className);
+            setValue('paper-subject-name', currentExamPaper.subjectName);
+            setValue('paper-exam-name', currentExamPaper.examName);
+            setValue('paper-time-allowed', currentExamPaper.timeAllowed);
+            setValue('paper-total-marks', currentExamPaper.totalMarks);
+
+            const restartCb = document.getElementById('paper-restart-numbering');
+            if (restartCb) restartCb.checked = currentExamPaper.restartNumberingPerSection !== false;
+
+            const showMarksCb = document.getElementById('paper-show-marks');
+            if (showMarksCb) showMarksCb.checked = currentExamPaper.showMarks !== false;
+
+            updateLogoPreview();
+            syncPaperLayoutControls();
+        }
+
+        function syncPaperLayoutControls() {
+            if (!currentExamPaper) return;
+            const fSize = currentExamPaper.fontSize || 14;
+            const mPreset = currentExamPaper.marginPreset || 'normal';
+            const mTop = currentExamPaper.marginTop !== undefined ? currentExamPaper.marginTop : 15;
+            const mBot = currentExamPaper.marginBottom !== undefined ? currentExamPaper.marginBottom : 15;
+            const mLeft = currentExamPaper.marginLeft !== undefined ? currentExamPaper.marginLeft : 18;
+            const mRight = currentExamPaper.marginRight !== undefined ? currentExamPaper.marginRight : 18;
+            const qGap = currentExamPaper.questionSpacing !== undefined ? currentExamPaper.questionSpacing : 11;
+            const lHeight = currentExamPaper.lineSpacing || 1.4;
+
+            // Font size slider, select, badges
+            const fsSlider = document.getElementById('paper-font-size-slider');
+            const fsSelect = document.getElementById('paper-font-size-select');
+            const fsBadge = document.getElementById('paper-font-size-badge');
+            const pvFs = document.getElementById('preview-font-size-indicator');
+            if (fsSlider) fsSlider.value = fSize;
+            if (fsSelect) fsSelect.value = fSize;
+            if (fsBadge) fsBadge.textContent = fSize + 'px';
+            if (pvFs) pvFs.textContent = fSize + 'px';
+
+            // Margin preset & inputs
+            const mpSelect = document.getElementById('paper-margin-preset');
+            const customRow = document.getElementById('paper-custom-margins-row');
+            const mtInput = document.getElementById('paper-margin-tb');
+            const mlInput = document.getElementById('paper-margin-lr');
+            const mBadge = document.getElementById('paper-margin-badge');
+            const pvMarginBtn = document.getElementById('preview-margin-btn');
+
+            if (mpSelect) mpSelect.value = mPreset;
+            if (customRow) customRow.style.display = (mPreset === 'custom') ? 'flex' : 'none';
+            if (mtInput) mtInput.value = mTop;
+            if (mlInput) mlInput.value = mLeft;
+
+            const marginLabel = mPreset === 'narrow' ? 'Narrow (8mm)' :
+                                mPreset === 'wide' ? 'Wide (22mm)' :
+                                mPreset === 'custom' ? `Custom (${mTop}x${mLeft}mm)` : 'Normal (15mm)';
+            if (mBadge) mBadge.textContent = marginLabel;
+            if (pvMarginBtn) pvMarginBtn.textContent = '📐 ' + (mPreset === 'custom' ? `${mTop}mm` : marginLabel.split(' ')[0]);
+
+            // Question spacing
+            const qgSlider = document.getElementById('paper-qgap-slider');
+            const qgSelect = document.getElementById('paper-qgap-select');
+            const qgBadge = document.getElementById('paper-qgap-badge');
+            const pvSpacingBtn = document.getElementById('preview-spacing-btn');
+            if (qgSlider) qgSlider.value = qGap;
+            if (qgSelect) qgSelect.value = qGap;
+            if (qgBadge) qgBadge.textContent = qGap + 'px';
+            if (pvSpacingBtn) pvSpacingBtn.textContent = '↔️ ' + (qGap <= 8 ? 'Tight' : qGap >= 20 ? 'Spacious' : 'Normal');
+
+            // Line height
+            const lhSelect = document.getElementById('paper-lineheight-select');
+            const lhBadge = document.getElementById('paper-lineheight-badge');
+            if (lhSelect) lhSelect.value = lHeight;
+            if (lhBadge) lhBadge.textContent = lHeight + 'x';
+        }
+
+        function onPaperFontSizeChange(newSize) {
+            newSize = parseInt(newSize, 10);
+            if (isNaN(newSize) || newSize < 10 || newSize > 26) return;
+            currentExamPaper.fontSize = newSize;
+            saveExamPaperDraft();
+            syncPaperLayoutControls();
+            renderExamPaperLivePreview();
+        }
+
+        function adjustPaperFontSize(delta) {
+            let current = currentExamPaper.fontSize || 14;
+            let next = Math.max(10, Math.min(26, current + delta));
+            onPaperFontSizeChange(next);
+        }
+
+        function onPaperMarginPresetChange(preset) {
+            currentExamPaper.marginPreset = preset;
+            if (preset === 'narrow') {
+                currentExamPaper.marginTop = 8;
+                currentExamPaper.marginBottom = 8;
+                currentExamPaper.marginLeft = 10;
+                currentExamPaper.marginRight = 10;
+            } else if (preset === 'normal') {
+                currentExamPaper.marginTop = 15;
+                currentExamPaper.marginBottom = 15;
+                currentExamPaper.marginLeft = 18;
+                currentExamPaper.marginRight = 18;
+            } else if (preset === 'wide') {
+                currentExamPaper.marginTop = 22;
+                currentExamPaper.marginBottom = 22;
+                currentExamPaper.marginLeft = 25;
+                currentExamPaper.marginRight = 25;
+            }
+            saveExamPaperDraft();
+            syncPaperLayoutControls();
+            renderExamPaperLivePreview();
+        }
+
+        function onCustomMarginChange() {
+            const tb = parseInt(document.getElementById('paper-margin-tb')?.value, 10) || 15;
+            const lr = parseInt(document.getElementById('paper-margin-lr')?.value, 10) || 18;
+            currentExamPaper.marginPreset = 'custom';
+            currentExamPaper.marginTop = tb;
+            currentExamPaper.marginBottom = tb;
+            currentExamPaper.marginLeft = lr;
+            currentExamPaper.marginRight = lr;
+            saveExamPaperDraft();
+            syncPaperLayoutControls();
+            renderExamPaperLivePreview();
+        }
+
+        function onPaperQGapChange(gap) {
+            gap = parseInt(gap, 10);
+            if (isNaN(gap)) return;
+            currentExamPaper.questionSpacing = gap;
+            saveExamPaperDraft();
+            syncPaperLayoutControls();
+            renderExamPaperLivePreview();
+        }
+
+        function onPaperLineHeightChange(val) {
+            currentExamPaper.lineSpacing = parseFloat(val) || 1.4;
+            saveExamPaperDraft();
+            syncPaperLayoutControls();
+            renderExamPaperLivePreview();
+        }
+
+        function applyPaperLayoutPreset(presetName) {
+            if (presetName === 'few_questions') {
+                // Large text, wide margins, spacious question gap
+                currentExamPaper.fontSize = 17;
+                currentExamPaper.marginPreset = 'wide';
+                currentExamPaper.marginTop = 22;
+                currentExamPaper.marginBottom = 22;
+                currentExamPaper.marginLeft = 24;
+                currentExamPaper.marginRight = 24;
+                currentExamPaper.questionSpacing = 24;
+                currentExamPaper.lineSpacing = 1.6;
+                showNotification('Applied "Few Questions" layout: Large text (17px) & spacious margins to fill A4 page!', 'info');
+            } else if (presetName === 'many_questions') {
+                // Compact text, tight margins, small gap
+                currentExamPaper.fontSize = 12;
+                currentExamPaper.marginPreset = 'narrow';
+                currentExamPaper.marginTop = 8;
+                currentExamPaper.marginBottom = 8;
+                currentExamPaper.marginLeft = 10;
+                currentExamPaper.marginRight = 10;
+                currentExamPaper.questionSpacing = 6;
+                currentExamPaper.lineSpacing = 1.25;
+                showNotification('Applied "Many Questions" layout: Compact text (12px) & narrow margins to fit 1 page!', 'info');
+            } else {
+                // Standard balanced default
+                currentExamPaper.fontSize = 14;
+                currentExamPaper.marginPreset = 'normal';
+                currentExamPaper.marginTop = 15;
+                currentExamPaper.marginBottom = 15;
+                currentExamPaper.marginLeft = 18;
+                currentExamPaper.marginRight = 18;
+                currentExamPaper.questionSpacing = 11;
+                currentExamPaper.lineSpacing = 1.4;
+                showNotification('Applied Standard A4 Layout (14px, Normal margins).', 'info');
+            }
+            saveExamPaperDraft();
+            syncPaperLayoutControls();
+            renderExamPaperLivePreview();
+        }
+
+        function cyclePaperMargin() {
+            const current = currentExamPaper.marginPreset || 'normal';
+            if (current === 'normal') {
+                onPaperMarginPresetChange('wide');
+            } else if (current === 'wide') {
+                onPaperMarginPresetChange('narrow');
+            } else {
+                onPaperMarginPresetChange('normal');
+            }
+        }
+
+        function cyclePaperSpacing() {
+            const current = currentExamPaper.questionSpacing !== undefined ? currentExamPaper.questionSpacing : 11;
+            if (current < 10) {
+                onPaperQGapChange(11);
+            } else if (current <= 14) {
+                onPaperQGapChange(22);
+            } else {
+                onPaperQGapChange(6);
+            }
+        }
+
+        function saveExamPaperDraft() {
+            if (!currentExamPaper) return;
+            try {
+                localStorage.setItem('current_exam_paper_draft', JSON.stringify(currentExamPaper));
+            } catch (e) {
+                console.warn('Draft save error:', e);
+            }
+        }
+
+        function getCalculatedQuestionNumber(sectionIndex, questionIndex) {
+            if (currentExamPaper.restartNumberingPerSection !== false) {
+                return questionIndex + 1;
+            } else {
+                let total = 0;
+                for (let s = 0; s < sectionIndex; s++) {
+                    total += currentExamPaper.sections[s].questions.length;
+                }
+                return total + questionIndex + 1;
+            }
+        }
+
+        function addNewSection() {
+            if (!currentExamPaper.sections) currentExamPaper.sections = [];
+            const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+            const nextLetter = letters[currentExamPaper.sections.length] || `Sec ${currentExamPaper.sections.length + 1}`;
+            currentExamPaper.sections.push({
+                id: 'sec_' + Date.now(),
+                title: `Section – ${nextLetter}`,
+                subtitle: '',
+                questions: []
+            });
+            saveExamPaperDraft();
+            renderExamPaperSectionsBuilder();
+            renderExamPaperLivePreview();
+            showNotification(`Added Section – ${nextLetter}.`, 'info');
+        }
+
+        function deleteSection(sectionIndex) {
+            if (confirm(`Are you sure you want to delete "${currentExamPaper.sections[sectionIndex].title}"?`)) {
+                currentExamPaper.sections.splice(sectionIndex, 1);
+                saveExamPaperDraft();
+                renderExamPaperSectionsBuilder();
+                renderExamPaperLivePreview();
+            }
+        }
+
+        function addQuestionToSection(sectionIndex, type) {
+            const sec = currentExamPaper.sections[sectionIndex];
+            if (!sec) return;
+            if (!sec.questions) sec.questions = [];
+
+            if (type === 'mcq') {
+                sec.questions.push({
+                    id: 'q_' + Date.now(),
+                    type: 'mcq',
+                    title: 'Choose the correct option –',
+                    marks: '',
+                    showQno: true,
+                    items: [
+                        { text: 'Sample Question 1', options: ['Option A', 'Option B', 'Option C', 'Option D'] }
+                    ]
+                });
+            } else {
+                sec.questions.push({
+                    id: 'q_' + Date.now(),
+                    type: 'subjective',
+                    title: 'Answer the following questions:',
+                    marks: '(10 Marks)',
+                    showQno: true,
+                    format: 'numbered',
+                    items: [
+                        'First question or statement here.'
+                    ],
+                    text: ''
+                });
+            }
+
+            saveExamPaperDraft();
+            renderExamPaperSectionsBuilder();
+            renderExamPaperLivePreview();
+        }
+
+        function deleteQuestionFromSection(sectionIndex, questionIndex) {
+            if (confirm('Delete this question?')) {
+                currentExamPaper.sections[sectionIndex].questions.splice(questionIndex, 1);
+                saveExamPaperDraft();
+                renderExamPaperSectionsBuilder();
+                renderExamPaperLivePreview();
+            }
+        }
+
+        function addMcqItem(sectionIndex, questionIndex) {
+            const q = currentExamPaper.sections[sectionIndex].questions[questionIndex];
+            if (!q.items) q.items = [];
+            q.items.push({ text: '', options: ['', '', '', ''] });
+            saveExamPaperDraft();
+            renderExamPaperSectionsBuilder();
+            renderExamPaperLivePreview();
+        }
+
+        function deleteMcqItem(sectionIndex, questionIndex, itemIndex) {
+            currentExamPaper.sections[sectionIndex].questions[questionIndex].items.splice(itemIndex, 1);
+            saveExamPaperDraft();
+            renderExamPaperSectionsBuilder();
+            renderExamPaperLivePreview();
+        }
+
+        function addSubQuestionItem(sectionIndex, questionIndex) {
+            const q = currentExamPaper.sections[sectionIndex].questions[questionIndex];
+            if (!q.items) q.items = [];
+            q.items.push('');
+            saveExamPaperDraft();
+            renderExamPaperSectionsBuilder();
+            renderExamPaperLivePreview();
+        }
+
+        function deleteSubQuestionItem(sectionIndex, questionIndex, itemIndex) {
+            currentExamPaper.sections[sectionIndex].questions[questionIndex].items.splice(itemIndex, 1);
+            saveExamPaperDraft();
+            renderExamPaperSectionsBuilder();
+            renderExamPaperLivePreview();
+        }
+
+        function renderExamPaperSectionsBuilder() {
+            const container = document.getElementById('exam-sections-container');
+            if (!container) return;
+
+            if (!currentExamPaper.sections || currentExamPaper.sections.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #64748b; background: #f8fafc; border-radius: 8px;">
+                        <p>No sections yet. Click below to add your first section (e.g. Section – A).</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+
+            currentExamPaper.sections.forEach((section, sIdx) => {
+                html += `
+                <div class="exam-section-card" data-section-idx="${sIdx}">
+                    <!-- Section Header -->
+                    <div class="exam-section-header">
+                        <span style="font-weight: bold; color: #1e293b; font-size: 15px;">📁 Section:</span>
+                        <input type="text" class="form-control" style="width: 180px; font-weight: bold;" 
+                            value="${escapeHtml(section.title)}" 
+                            placeholder="e.g. Section – A"
+                            onchange="updateSectionField(${sIdx}, 'title', this.value)" />
+                        <input type="text" class="form-control" style="flex: 1; min-width: 150px;" 
+                            value="${escapeHtml(section.subtitle || '')}" 
+                            placeholder="Subtitle / Note (e.g. Objective Type or 20 Marks)"
+                            onchange="updateSectionField(${sIdx}, 'subtitle', this.value)" />
+                        <button class="btn btn-danger btn-sm" type="button" onclick="deleteSection(${sIdx})" title="Delete Section">
+                            🗑️ Delete Section
+                        </button>
+                    </div>
+
+                    <!-- Questions in Section -->
+                    <div class="exam-questions-list">
+                `;
+
+                if (!section.questions || section.questions.length === 0) {
+                    html += `
+                        <div style="padding: 12px; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 6px; text-align: center; color: #94a3b8; margin-bottom: 10px;">
+                            No questions in this section yet. Add MCQs or Subjective questions below.
+                        </div>
+                    `;
+                } else {
+                    section.questions.forEach((question, qIdx) => {
+                        const qNum = getCalculatedQuestionNumber(sIdx, qIdx);
+                        const qLabel = `Qno${qNum}:`;
+
+                        html += `
+                        <div class="exam-question-card" data-q-idx="${qIdx}">
+                            <!-- Question Top bar -->
+                            <div class="exam-question-top">
+                                <span class="exam-qno-badge">${qLabel}</span>
+                                <input type="text" class="form-control" style="flex: 2; min-width: 220px; font-weight: 600;" 
+                                    value="${escapeHtml(question.title || '')}" 
+                                    placeholder="Question Statement / Instructions (e.g. Choose the correct option –)"
+                                    onchange="updateQuestionField(${sIdx}, ${qIdx}, 'title', this.value)" />
+                                <input type="text" class="form-control" style="width: 110px;" 
+                                    value="${escapeHtml(question.marks || '')}" 
+                                    placeholder="Marks (e.g. 5 Marks)"
+                                    onchange="updateQuestionField(${sIdx}, ${qIdx}, 'marks', this.value)" />
+                                <select class="form-control" style="width: 140px;" 
+                                    onchange="changeQuestionType(${sIdx}, ${qIdx}, this.value)">
+                                    <option value="mcq" ${question.type === 'mcq' ? 'selected' : ''}>MCQs</option>
+                                    <option value="subjective" ${question.type === 'subjective' ? 'selected' : ''}>Subjective</option>
+                                </select>
+                                <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #64748b; margin: 0; cursor: pointer;" title="Show Qno prefix">
+                                    <input type="checkbox" ${question.showQno !== false ? 'checked' : ''} 
+                                        onchange="updateQuestionField(${sIdx}, ${qIdx}, 'showQno', this.checked)" />
+                                    <span>Qno Label</span>
+                                </label>
+                                <button class="btn btn-danger btn-sm" type="button" onclick="deleteQuestionFromSection(${sIdx}, ${qIdx})" title="Delete Question">✕</button>
+                            </div>
+                        `;
+
+                        if (question.type === 'mcq') {
+                            // MCQs Builder
+                            html += `
+                            <div class="mcqs-builder-area">
+                                <div style="font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">MCQ Questions & Options:</div>
+                            `;
+
+                            (question.items || []).forEach((item, itmIdx) => {
+                                const isUrdu = isUrduContent(item.text);
+                                html += `
+                                <div class="mcq-item-row">
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <span style="font-weight: bold; width: 22px; color: #334155;">${itmIdx + 1}.</span>
+                                        <input type="text" class="form-control ${isUrdu ? 'urdu-text-input' : ''}" style="flex: 1;" 
+                                            value="${escapeHtml(item.text)}" 
+                                            placeholder="Question text (e.g. The 2nd form of take.)"
+                                            onchange="updateMcqText(${sIdx}, ${qIdx}, ${itmIdx}, this.value)" />
+                                        <button class="btn btn-danger btn-sm" type="button" onclick="deleteMcqItem(${sIdx}, ${qIdx}, ${itmIdx})">✕</button>
+                                    </div>
+                                    <div class="mcq-options-grid">
+                                        <div style="display:flex; align-items:center; gap:4px;">
+                                            <span style="font-weight:bold; font-size:12px;">a)</span>
+                                            <input type="text" class="form-control" style="padding: 4px 8px; font-size: 13px;" 
+                                                value="${escapeHtml(item.options[0] || '')}" placeholder="Option A" 
+                                                onchange="updateMcqOption(${sIdx}, ${qIdx}, ${itmIdx}, 0, this.value)" />
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:4px;">
+                                            <span style="font-weight:bold; font-size:12px;">b)</span>
+                                            <input type="text" class="form-control" style="padding: 4px 8px; font-size: 13px;" 
+                                                value="${escapeHtml(item.options[1] || '')}" placeholder="Option B" 
+                                                onchange="updateMcqOption(${sIdx}, ${qIdx}, ${itmIdx}, 1, this.value)" />
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:4px;">
+                                            <span style="font-weight:bold; font-size:12px;">c)</span>
+                                            <input type="text" class="form-control" style="padding: 4px 8px; font-size: 13px;" 
+                                                value="${escapeHtml(item.options[2] || '')}" placeholder="Option C" 
+                                                onchange="updateMcqOption(${sIdx}, ${qIdx}, ${itmIdx}, 2, this.value)" />
+                                        </div>
+                                        <div style="display:flex; align-items:center; gap:4px;">
+                                            <span style="font-weight:bold; font-size:12px;">d)</span>
+                                            <input type="text" class="form-control" style="padding: 4px 8px; font-size: 13px;" 
+                                                value="${escapeHtml(item.options[3] || '')}" placeholder="Option D (optional)" 
+                                                onchange="updateMcqOption(${sIdx}, ${qIdx}, ${itmIdx}, 3, this.value)" />
+                                        </div>
+                                    </div>
+                                </div>
+                                `;
+                            });
+
+                            html += `
+                                <div style="display: flex; gap: 8px; margin-top: 6px;">
+                                    <button class="btn btn-primary btn-sm" type="button" onclick="addMcqItem(${sIdx}, ${qIdx})">+ Add MCQ Item</button>
+                                </div>
+                            </div>
+                            `;
+                        } else {
+                            // Subjective Builder
+                            html += `
+                            <div class="subjective-builder-area">
+                                <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 8px; font-size: 13px;">
+                                    <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
+                                        <input type="radio" name="format_${sIdx}_${qIdx}" value="numbered" 
+                                            ${question.format !== 'paragraph' ? 'checked' : ''} 
+                                            onchange="updateQuestionField(${sIdx}, ${qIdx}, 'format', 'numbered')" />
+                                        <span>Numbered Sub-questions (1, 2, 3...)</span>
+                                    </label>
+                                    <label style="cursor:pointer; display:flex; align-items:center; gap:4px;">
+                                        <input type="radio" name="format_${sIdx}_${qIdx}" value="paragraph" 
+                                            ${question.format === 'paragraph' ? 'checked' : ''} 
+                                            onchange="updateQuestionField(${sIdx}, ${qIdx}, 'format', 'paragraph')" />
+                                        <span>Paragraph / Direct Text</span>
+                                    </label>
+                                </div>
+                            `;
+
+                            if (question.format === 'paragraph') {
+                                html += `
+                                    <textarea class="form-control" rows="3" placeholder="Enter paragraph or descriptive text (e.g. Essay topics, letters, instructions)..."
+                                        onchange="updateQuestionField(${sIdx}, ${qIdx}, 'text', this.value)">${escapeHtml(question.text || '')}</textarea>
+                                `;
+                            } else {
+                                (question.items || []).forEach((itemText, itmIdx) => {
+                                    const isUrdu = isUrduContent(itemText);
+                                    html += `
+                                    <div class="subjective-item-row">
+                                        <span style="font-weight: bold; width: 22px; color: #334155;">${itmIdx + 1}.</span>
+                                        <input type="text" class="form-control ${isUrdu ? 'urdu-text-input' : ''}" style="flex: 1;" 
+                                            value="${escapeHtml(itemText)}" 
+                                            placeholder="Question text (English or Urdu)"
+                                            onchange="updateSubQuestionText(${sIdx}, ${qIdx}, ${itmIdx}, this.value)" />
+                                        <button class="btn btn-danger btn-sm" type="button" onclick="deleteSubQuestionItem(${sIdx}, ${qIdx}, ${itmIdx})">✕</button>
+                                    </div>
+                                    `;
+                                });
+
+                                html += `
+                                <div style="display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap;">
+                                    <button class="btn btn-primary btn-sm" type="button" onclick="addSubQuestionItem(${sIdx}, ${qIdx})">+ Add Sub-question</button>
+                                    <button class="btn btn-info btn-sm" type="button" onclick="openBulkPasteModal(${sIdx}, ${qIdx})">📋 Paste Questions List</button>
+                                </div>
+                                `;
+                            }
+
+                            html += `</div>`;
+                        }
+
+                        html += `</div>`;
+                    });
+                }
+
+                // Add Question buttons for this section
+                html += `
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #cbd5e1;">
+                        <button class="btn btn-primary btn-sm" type="button" onclick="addQuestionToSection(${sIdx}, 'mcq')">
+                            + Add Question (MCQs)
+                        </button>
+                        <button class="btn btn-info btn-sm" type="button" onclick="addQuestionToSection(${sIdx}, 'subjective')">
+                            + Add Question (Short / Long / Manual)
+                        </button>
+                    </div>
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function updateSectionField(sectionIndex, field, value) {
+            currentExamPaper.sections[sectionIndex][field] = value;
+            saveExamPaperDraft();
+            renderExamPaperLivePreview();
+        }
+
+        function updateQuestionField(sectionIndex, questionIndex, field, value) {
+            currentExamPaper.sections[sectionIndex].questions[questionIndex][field] = value;
+            saveExamPaperDraft();
+            if (field === 'format' || field === 'type') {
+                renderExamPaperSectionsBuilder();
+            }
+            renderExamPaperLivePreview();
+        }
+
+        function changeQuestionType(sectionIndex, questionIndex, newType) {
+            const q = currentExamPaper.sections[sectionIndex].questions[questionIndex];
+            q.type = newType;
+            if (newType === 'mcq' && (!q.items || q.items.length === 0)) {
+                q.items = [{ text: '', options: ['', '', '', ''] }];
+            } else if (newType === 'subjective' && (!q.items || q.items.length === 0)) {
+                q.items = [''];
+            }
+            saveExamPaperDraft();
+            renderExamPaperSectionsBuilder();
+            renderExamPaperLivePreview();
+        }
+
+        function updateMcqText(sectionIndex, questionIndex, itemIndex, val) {
+            currentExamPaper.sections[sectionIndex].questions[questionIndex].items[itemIndex].text = val;
+            saveExamPaperDraft();
+            renderExamPaperLivePreview();
+        }
+
+        function updateMcqOption(sectionIndex, questionIndex, itemIndex, optIndex, val) {
+            currentExamPaper.sections[sectionIndex].questions[questionIndex].items[itemIndex].options[optIndex] = val;
+            saveExamPaperDraft();
+            renderExamPaperLivePreview();
+        }
+
+        function updateSubQuestionText(sectionIndex, questionIndex, itemIndex, val) {
+            currentExamPaper.sections[sectionIndex].questions[questionIndex].items[itemIndex] = val;
+            saveExamPaperDraft();
+            renderExamPaperLivePreview();
+        }
+
+        function openBulkPasteModal(sectionIndex, questionIndex) {
+            const pastedText = prompt("Paste your questions here (one question per line):\nThey will automatically be added as numbered questions!");
+            if (!pastedText) return;
+            const lines = pastedText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if (lines.length === 0) return;
+
+            const q = currentExamPaper.sections[sectionIndex].questions[questionIndex];
+            if (!q.items) q.items = [];
+            
+            lines.forEach(line => {
+                const cleaned = line.replace(/^(\d+[\.\)]\s*|Q\d+[:\.\-]\s*)/i, '').trim();
+                if (cleaned) q.items.push(cleaned);
+            });
+
+            saveExamPaperDraft();
+            renderExamPaperSectionsBuilder();
+            renderExamPaperLivePreview();
+            showNotification(`Added ${lines.length} questions!`, 'success');
+        }
+
+        // =========================================================================
+        // ============= LIVE REAL-TIME ICMS PAPER PREVIEW RENDERER ================
+        // =========================================================================
+        function renderExamPaperLivePreview() {
+            if (!currentExamPaper) return;
+
+            // Header Elements
+            const schoolEl = document.getElementById('pv-school-title');
+            const classEl = document.getElementById('pv-class-text');
+            const timeEl = document.getElementById('pv-time-text');
+            const paperEl = document.getElementById('pv-paper-text');
+            const examEl = document.getElementById('pv-exam-text');
+            const marksEl = document.getElementById('pv-marks-text');
+            const logoEl = document.getElementById('pv-logo-img');
+
+            if (schoolEl) schoolEl.textContent = currentExamPaper.schoolName || '';
+            if (classEl) classEl.textContent = currentExamPaper.className || '';
+            if (timeEl) timeEl.textContent = currentExamPaper.timeAllowed || '';
+            if (paperEl) paperEl.textContent = currentExamPaper.subjectName || '';
+            if (examEl) examEl.textContent = currentExamPaper.examName || '';
+            if (marksEl) marksEl.textContent = currentExamPaper.totalMarks || '';
+
+            const headerContainer = document.getElementById('icms-header-container');
+            if (logoEl) {
+                if (currentExamPaper.logoDataUrl) {
+                    logoEl.src = currentExamPaper.logoDataUrl;
+                    logoEl.style.display = 'block';
+                    if (headerContainer) headerContainer.classList.add('has-logo');
+                } else {
+                    logoEl.style.display = 'none';
+                    if (headerContainer) headerContainer.classList.remove('has-logo');
+                }
+            } else if (headerContainer) {
+                if (currentExamPaper.logoDataUrl) {
+                    headerContainer.classList.add('has-logo');
+                } else {
+                    headerContainer.classList.remove('has-logo');
+                }
+            }
+
+            // Apply layout & typography styles to the paper document
+            const paperDoc = document.getElementById('icms-paper-document');
+            if (paperDoc) {
+                const fontSize = currentExamPaper.fontSize || 14;
+                const marginTop = currentExamPaper.marginTop !== undefined ? currentExamPaper.marginTop : 15;
+                const marginBottom = currentExamPaper.marginBottom !== undefined ? currentExamPaper.marginBottom : 15;
+                const marginLeft = currentExamPaper.marginLeft !== undefined ? currentExamPaper.marginLeft : 18;
+                const marginRight = currentExamPaper.marginRight !== undefined ? currentExamPaper.marginRight : 18;
+                const lineSpacing = currentExamPaper.lineSpacing || 1.4;
+                const questionSpacing = currentExamPaper.questionSpacing !== undefined ? currentExamPaper.questionSpacing : 11;
+
+                paperDoc.style.setProperty('--paper-font-size', fontSize + 'px');
+                paperDoc.style.setProperty('--paper-margin-top', marginTop + 'mm');
+                paperDoc.style.setProperty('--paper-margin-bottom', marginBottom + 'mm');
+                paperDoc.style.setProperty('--paper-margin-left', marginLeft + 'mm');
+                paperDoc.style.setProperty('--paper-margin-right', marginRight + 'mm');
+                paperDoc.style.setProperty('--paper-line-height', lineSpacing);
+                paperDoc.style.setProperty('--paper-question-gap', questionSpacing + 'px');
+
+                paperDoc.style.fontSize = fontSize + 'px';
+                paperDoc.style.lineHeight = lineSpacing;
+                paperDoc.style.paddingTop = marginTop + 'mm';
+                paperDoc.style.paddingBottom = marginBottom + 'mm';
+                paperDoc.style.paddingLeft = marginLeft + 'mm';
+                paperDoc.style.paddingRight = marginRight + 'mm';
+            }
+
+            // Update preview toolbar indicators
+            const pvFs = document.getElementById('preview-font-size-indicator');
+            if (pvFs) pvFs.textContent = (currentExamPaper.fontSize || 14) + 'px';
+            const pvM = document.getElementById('preview-margin-btn');
+            if (pvM) {
+                const p = currentExamPaper.marginPreset || 'normal';
+                pvM.textContent = '📐 ' + (p === 'narrow' ? 'Narrow (8mm)' : p === 'wide' ? 'Wide (22mm)' : p === 'custom' ? `${currentExamPaper.marginTop}mm` : 'Normal (15mm)');
+            }
+            const pvS = document.getElementById('preview-spacing-btn');
+            if (pvS) {
+                const g = currentExamPaper.questionSpacing !== undefined ? currentExamPaper.questionSpacing : 11;
+                pvS.textContent = '↔️ ' + (g <= 8 ? 'Tight' : g >= 20 ? 'Wide' : 'Normal');
+            }
+
+            // Sections & Questions Content
+            const contentEl = document.getElementById('pv-sections-content');
+            if (!contentEl) return;
+
+            let html = '';
+
+            (currentExamPaper.sections || []).forEach((section, sIdx) => {
+                html += `
+                <div class="icms-section-block">
+                    <!-- Centered Section Title matching ICMS.pdf e.g. (Section – A) -->
+                    <div class="icms-section-heading">(${escapeHtml(section.title)})</div>
+                `;
+
+                if (section.subtitle) {
+                    html += `<div class="icms-section-sub">${escapeHtml(section.subtitle)}</div>`;
+                }
+
+                (section.questions || []).forEach((question, qIdx) => {
+                    const qNum = getCalculatedQuestionNumber(sIdx, qIdx);
+                    const qLabel = question.showQno !== false ? `Qno${qNum}: ` : '';
+                    const marksText = (currentExamPaper.showMarks !== false && question.marks) ? ` ${escapeHtml(question.marks)}` : '';
+
+                    html += `
+                    <div class="icms-question-block">
+                        <div class="icms-question-header">
+                            <span><strong>${qLabel}</strong>${escapeHtml(question.title || '')}</span>
+                            ${marksText ? `<span><strong>${marksText}</strong></span>` : ''}
+                        </div>
+                    `;
+
+                    if (question.type === 'mcq') {
+                        html += `<ul class="icms-mcq-list">`;
+                        (question.items || []).forEach((item, itmIdx) => {
+                            const isUrdu = isUrduContent(item.text);
+                            html += `
+                            <li class="icms-mcq-single">
+                                <div class="icms-mcq-question-text ${isUrdu ? 'icms-subjective-item is-urdu' : ''}">
+                                    ${itmIdx + 1}. ${escapeHtml(item.text)}
+                                </div>
+                                <div class="icms-mcq-choices">
+                                    ${item.options[0] ? `<span>a) ${escapeHtml(item.options[0])}</span>` : ''}
+                                    ${item.options[1] ? `<span>b) ${escapeHtml(item.options[1])}</span>` : ''}
+                                    ${item.options[2] ? `<span>c) ${escapeHtml(item.options[2])}</span>` : ''}
+                                    ${item.options[3] ? `<span>d) ${escapeHtml(item.options[3])}</span>` : ''}
+                                </div>
+                            </li>
+                            `;
+                        });
+                        html += `</ul>`;
+                    } else {
+                        if (question.format === 'paragraph') {
+                            html += `
+                                <div class="icms-paragraph-text">${escapeHtml(question.text || '')}</div>
+                            `;
+                        } else {
+                            html += `<ul class="icms-subjective-list">`;
+                            (question.items || []).forEach((subText, itmIdx) => {
+                                const isUrdu = isUrduContent(subText);
+                                if (isUrdu) {
+                                    html += `
+                                    <li class="icms-subjective-item is-urdu">
+                                        <span>${escapeHtml(subText)}</span>
+                                        <span style="margin-left: 8px;">.${itmIdx + 1}</span>
+                                    </li>
+                                    `;
+                                } else {
+                                    html += `
+                                    <li class="icms-subjective-item">
+                                        <span style="width: 22px; flex-shrink: 0;">${itmIdx + 1}.</span>
+                                        <span>${escapeHtml(subText)}</span>
+                                    </li>
+                                    `;
+                                }
+                            });
+                            html += `</ul>`;
+                        }
+                    }
+
+                    html += `</div>`; // Close question block
+                });
+
+                html += `</div>`; // Close section block
+            });
+
+            contentEl.innerHTML = html;
+        }
+
+        // =========================================================================
+        // ==================== PRINT & PDF EXPORT FUNCTIONS =======================
+        // =========================================================================
+        function toggleExamPaperPreview(forceState) {
+            const previewSection = document.getElementById('exam-paper-preview-section');
+            const bottomBtn = document.getElementById('btn-toggle-preview-bottom');
+            const topBtn = document.getElementById('btn-toggle-preview-top');
+            if (!previewSection) return;
+
+            const isCurrentlyVisible = previewSection.style.display !== 'none';
+            const shouldShow = (typeof forceState === 'boolean') ? forceState : !isCurrentlyVisible;
+
+            if (shouldShow) {
+                renderExamPaperLivePreview();
+                previewSection.style.display = 'block';
+                if (bottomBtn) {
+                    bottomBtn.innerHTML = '🙈 Hide Paper Preview (پریویو چھپائیں)';
+                    bottomBtn.style.backgroundColor = '#64748b';
+                }
+                if (topBtn) {
+                    topBtn.innerHTML = '🙈 Hide Preview';
+                }
+                setTimeout(() => {
+                    previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            } else {
+                previewSection.style.display = 'none';
+                if (bottomBtn) {
+                    bottomBtn.innerHTML = '👁️ View Paper Preview (امتحانی پرچہ پریویو دیکھیں)';
+                    bottomBtn.style.backgroundColor = '#22c55e';
+                }
+                if (topBtn) {
+                    topBtn.innerHTML = '👁️ View Paper Preview';
+                }
+            }
+        }
+
+        function scrollToPaperForm() {
+            const formCard = document.querySelector('.exam-paper-controls-col');
+            if (formCard) {
+                formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function printExamPaper() {
+            const previewSection = document.getElementById('exam-paper-preview-section');
+            const wasHidden = previewSection && previewSection.style.display === 'none';
+            if (wasHidden) {
+                previewSection.style.display = 'block';
+                renderExamPaperLivePreview();
+            }
+            window.print();
+        }
+
+        async function downloadExamPaperPDF() {
+            showLoading();
+            const previewSection = document.getElementById('exam-paper-preview-section');
+            const wasHidden = previewSection && previewSection.style.display === 'none';
+            if (wasHidden) {
+                previewSection.style.display = 'block';
+                renderExamPaperLivePreview();
+            }
+            try {
+                const element = document.getElementById('icms-paper-document');
+                if (!element) throw new Error('Paper document preview element not found.');
+
+                // Dynamically ensure jsPDF is available
+                if (!window.jspdf && typeof jsPDF === 'undefined') {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'libs/jspdf.umd.min.js';
+                        script.onload = resolve;
+                        script.onerror = () => {
+                            const cdnScript = document.createElement('script');
+                            cdnScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                            cdnScript.onload = resolve;
+                            cdnScript.onerror = reject;
+                            document.head.appendChild(cdnScript);
+                        };
+                        document.head.appendChild(script);
+                    });
+                }
+
+                if (typeof html2canvas === 'undefined') {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'libs/html2canvas.min.js';
+                        script.onload = resolve;
+                        script.onerror = () => {
+                            const cdnScript = document.createElement('script');
+                            cdnScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                            cdnScript.onload = resolve;
+                            cdnScript.onerror = reject;
+                            document.head.appendChild(cdnScript);
+                        };
+                        document.head.appendChild(script);
+                    });
+                }
+
+                const jsPdfConstructor = window.jspdf ? window.jspdf.jsPDF : jsPDF;
+
+                // High-resolution canvas capture
+                const canvas = await html2canvas(element, {
+                    scale: 2, // 300 DPI equivalent for crisp text
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                const pdf = new jsPdfConstructor('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
+                const totalImgHeight = (canvasHeight * pdfWidth) / canvasWidth;
+
+                if (totalImgHeight <= pdfHeight) {
+                    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, totalImgHeight);
+                } else {
+                    // Multi-page handling with clean splitting
+                    let heightLeft = totalImgHeight;
+                    let position = 0;
+
+                    pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, totalImgHeight);
+                    heightLeft -= pdfHeight;
+
+                    while (heightLeft > 0) {
+                        position = position - pdfHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, totalImgHeight);
+                        heightLeft -= pdfHeight;
+                    }
+                }
+
+                const paperName = (currentExamPaper.subjectName || 'Exam') + '_' + (currentExamPaper.className || 'Paper');
+                const cleanFileName = paperName.replace(/[^a-zA-Z0-9_\u0600-\u06FF]/g, '_') + '_Paper.pdf';
+                pdf.save(cleanFileName);
+                showNotification('Exam paper PDF downloaded successfully!', 'success');
+            } catch (err) {
+                console.error('PDF Export Error:', err);
+                showNotification('Failed to generate PDF: ' + err.message, 'error');
+            } finally {
+                if (wasHidden && previewSection) {
+                    previewSection.style.display = 'none';
+                }
+                hideLoading();
+            }
+        }
+
+        async function exportExamPaperPNG() {
+            const previewSection = document.getElementById('exam-paper-preview-section');
+            const wasHidden = previewSection && previewSection.style.display === 'none';
+            if (wasHidden) {
+                previewSection.style.display = 'block';
+                renderExamPaperLivePreview();
+            }
+            try {
+                const filename = (currentExamPaper.subjectName || 'Exam') + '_' + (currentExamPaper.className || 'Paper') + '.png';
+                await exportElementAsPNG('icms-paper-document', filename.replace(/[^a-zA-Z0-9_\u0600-\u06FF]/g, '_') + '.png');
+            } finally {
+                if (wasHidden && previewSection) {
+                    previewSection.style.display = 'none';
+                }
+            }
+        }
+
+        async function exportElementAsPNG(elementId, filename) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            showLoading();
+            
+            const buttons = document.querySelectorAll('.no-print');
+            buttons.forEach(btn => btn.style.visibility = 'hidden');
+
+            try {
+                if (typeof html2canvas === 'undefined') {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'libs/html2canvas.min.js';
+                        script.onload = resolve;
+                        script.onerror = () => {
+                            const cdnScript = document.createElement('script');
+                            cdnScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                            cdnScript.onload = resolve;
+                            cdnScript.onerror = reject;
+                            document.head.appendChild(cdnScript);
+                        };
+                        document.head.appendChild(script);
+                    });
+                }
+
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: "#ffffff"
+                });
+                
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showNotification("PNG downloaded successfully!", "success");
+            } catch (err) {
+                console.error(err);
+                showNotification("Export Failed: " + err.message, "error");
+            } finally {
+                buttons.forEach(btn => btn.style.visibility = 'visible');
+                hideLoading();
+            }
+        }
+
+        // =========================================================================
+        // ====================== TEMPLATES & STORAGE ==============================
+        // =========================================================================
+        function saveExamPaperTemplate() {
+            const defaultName = `${currentExamPaper.subjectName || 'Paper'} - ${currentExamPaper.className || 'Class'} (${new Date().toLocaleDateString()})`;
+            const paperTitle = prompt('Enter a name for this exam paper template:', defaultName);
+            if (!paperTitle) return;
+
+            try {
+                const saved = JSON.parse(localStorage.getItem('saved_exam_papers') || '[]');
+                const paperRecord = {
+                    id: 'paper_' + Date.now(),
+                    name: paperTitle,
+                    savedAt: new Date().toISOString(),
+                    data: JSON.parse(JSON.stringify(currentExamPaper))
+                };
+                saved.push(paperRecord);
+                localStorage.setItem('saved_exam_papers', JSON.stringify(saved));
+                refreshSavedPapersDropdown();
+                showNotification(`Paper "${paperTitle}" saved successfully!`, 'success');
+            } catch (e) {
+                console.error('Save error:', e);
+                showNotification('Failed to save paper: ' + e.message, 'error');
+            }
+        }
+
+        function refreshSavedPapersDropdown() {
+            const select = document.getElementById('saved-papers-select');
+            if (!select) return;
+            try {
+                const saved = JSON.parse(localStorage.getItem('saved_exam_papers') || '[]');
+                let opts = '<option value="">📂 Load Saved Paper...</option>';
+                saved.forEach(p => {
+                    opts += `<option value="${p.id}">${escapeHtml(p.name)}</option>`;
+                });
+                select.innerHTML = opts;
+            } catch (e) {
+                console.warn(e);
+            }
+        }
+
+        function loadSelectedSavedPaper() {
+            const select = document.getElementById('saved-papers-select');
+            if (!select || !select.value) {
+                showNotification('Please select a saved paper from the dropdown first.', 'info');
+                return;
+            }
+            try {
+                const saved = JSON.parse(localStorage.getItem('saved_exam_papers') || '[]');
+                const paper = saved.find(p => p.id === select.value);
+                if (paper && paper.data) {
+                    currentExamPaper = JSON.parse(JSON.stringify(paper.data));
+                    saveExamPaperDraft();
+                    syncExamPaperFormFromModel();
+                    renderExamPaperSectionsBuilder();
+                    renderExamPaperLivePreview();
+                    showNotification(`Loaded paper "${paper.name}".`, 'success');
+                }
+            } catch (e) {
+                showNotification('Failed to load paper: ' + e.message, 'error');
+            }
+        }
+
+        function deleteSelectedSavedPaper() {
+            const select = document.getElementById('saved-papers-select');
+            if (!select || !select.value) {
+                showNotification('Please select a saved paper to delete.', 'info');
+                return;
+            }
+            if (confirm('Are you sure you want to delete this saved paper?')) {
+                try {
+                    let saved = JSON.parse(localStorage.getItem('saved_exam_papers') || '[]');
+                    saved = saved.filter(p => p.id !== select.value);
+                    localStorage.setItem('saved_exam_papers', JSON.stringify(saved));
+                    refreshSavedPapersDropdown();
+                    showNotification('Saved paper deleted.', 'info');
+                } catch (e) {
+                    showNotification('Delete error: ' + e.message, 'error');
+                }
+            }
+        }
+
+        // Initialize automatically on DOM load
+        document.addEventListener('DOMContentLoaded', () => {
+            initExamPaperMaker();
+        });
+    </script>
+</body>
+</html>
